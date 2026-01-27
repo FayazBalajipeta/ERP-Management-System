@@ -1,0 +1,149 @@
+/* ============================= */
+/* Dashboard Layout Fix          */
+/* ============================= */
+
+.dashboard-container {
+  margin-left: 240px;                 /* 🔥 FIX: sidebar offset */
+  width: calc(100% - 240px);          /* 🔥 FIX */
+  padding: 32px 36px;
+  background-color: #f6f8fb;
+  min-height: calc(100vh - 70px);
+  box-sizing: border-box;
+}
+
+/* ============================= */
+/* Dashboard Title               */
+/* ============================= */
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 28px;
+  color: #1e3c72;
+}
+
+/* ============================= */
+/* Dashboard Cards Layout        */
+/* ============================= */
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 equal cards */
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+/* ============================= */
+/* Individual Card               */
+/* ============================= */
+
+.dashboard-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 28px 30px;
+  min-height: 140px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Hover effect */
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================= */
+/* Card Text                     */
+/* ============================= */
+
+.dashboard-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: #6b7280;
+}
+
+.dashboard-card p {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1e3c72;
+  margin: 0;
+}
+
+/* ============================= */
+/* Charts Section                */
+/* ============================= */
+
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1e3c72;
+}
+
+/* ============================= */
+/* Responsive Adjustments        */
+/* ============================= */
+
+/* Large Tablets / Small Laptops */
+@media (max-width: 1200px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-card {
+    min-height: 130px;
+  }
+
+  .dashboard-card p {
+    font-size: 32px;
+  }
+}
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .dashboard-container {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card {
+    min-height: 120px;
+    padding: 22px;
+  }
+
+  .dashboard-card p {
+    font-size: 28px;
+  }
+}

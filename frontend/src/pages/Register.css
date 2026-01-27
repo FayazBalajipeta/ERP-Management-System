@@ -1,0 +1,116 @@
+/* ================================
+   PAGE BACKGROUND (SAME AS LOGIN)
+================================ */
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Same background as Login */
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.45)
+    ),
+    url("../assets/bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ================================
+   REGISTER CARD (MATCH LOGIN CARD)
+================================ */
+.register-card {
+  width: 850px;
+  padding: 56px;
+  border-radius: 26px;
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.18),
+      transparent 40%
+    ),
+    linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.55);
+}
+
+/* ================================
+   HEADINGS
+================================ */
+.register-card h2 {
+  font-size: 35px;
+  margin-bottom: 8px;
+}
+
+.register-card p {
+  font-size: 30px;
+  opacity: 0.9;
+  margin-bottom: 28px;
+}
+
+/* ================================
+   FORM LAYOUT
+================================ */
+.register-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* FIRST + LAST NAME ROW */
+.row {
+  display: flex;
+  gap: 14px;
+}
+
+/* ================================
+   INPUT FIELDS
+================================ */
+.register-card input {
+  padding: 14px 16px;
+  font-size: 30px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+}
+
+/* ================================
+   REGISTER BUTTON
+================================ */
+.register-card button {
+  margin-top: 18px;
+  padding: 16px;
+  font-size: 30px;
+  background: #1b2a6b;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.register-card button:hover {
+  background: #14205a;
+  transform: translateY(-2px);
+}
+
+/* ================================
+   LOGIN LINK
+================================ */
+.login-link {
+  margin-top: 22px;
+  font-size: 30px;
+  text-align: center;
+}
+
+.login-link span {
+  color: #90caf9;
+  cursor: pointer;
+}

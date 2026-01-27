@@ -1,0 +1,189 @@
+/* ================================
+   PAGE BACKGROUND
+================================ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.45)
+    ),
+    url("../assets/bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ================================
+   CARD WRAPPER
+================================ */
+.login-card-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ================================
+   LOGIN CARD (⬆ BIGGER)
+================================ */
+.login-card {
+  width: 520px;              /* ⬆ increased */
+  padding: 56px;             /* ⬆ more space */
+  border-radius: 26px;
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.18),
+      transparent 40%
+    ),
+    linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.55);
+}
+
+/* ================================
+   LOGO
+================================ */
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 30px;           /* ⬆ bigger */
+  font-weight: bold;
+  margin-bottom: 28px;
+}
+
+.logo span {
+  margin-left: 20px;
+}
+
+/* ================================
+   HEADINGS
+================================ */
+.login-card h2 {
+  font-size: 30px;           /* ⬆ bigger */
+  margin-bottom: 10px;
+}
+
+.login-card p {
+  font-size: 30px;           /* ⬆ bigger */
+  opacity: 0.9;
+  margin-bottom: 30px;
+}
+
+/* ================================
+   INPUT GROUP
+================================ */
+.input-group {
+  margin-bottom: 22px;
+}
+
+.input-group label {
+  font-size: 30px;           /* ⬆ bigger */
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* ================================
+   INPUT BOX
+================================ */
+.input-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px 16px;        /* ⬆ bigger */
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.input-box input {
+  border: none;
+  outline: none;
+  flex: 1;
+  padding-left: 30px;
+  font-size: 30px;           /* ⬆ bigger */
+}
+
+/* Focus effect */
+.input-box:focus-within {
+  box-shadow: 0 0 0 3px #90caf9;
+  transform: scale(1.02);
+}
+
+/* Icons */
+.icon {
+  color: #2a5298;
+  font-size: 30px;           /* ⬆ bigger */
+}
+
+/* ================================
+   LOGIN BUTTON
+================================ */
+.login-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 16px;             /* ⬆ bigger */
+  background: #1b2a6b;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 30px;           /* ⬆ bigger */
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.login-btn:hover {
+  background: #14205a;
+  transform: translateY(-3px);
+}
+
+/* ================================
+   OR DIVIDER
+================================ */
+.or {
+  text-align: center;
+  margin: 22px 0;
+  font-size: 30px;           /* ⬆ bigger */
+  opacity: 0.8;
+}
+
+/* ================================
+   SIGNUP BUTTON
+================================ */
+.signup-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-size: 30px;           /* ⬆ bigger */
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.signup-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.forgot-password {
+  text-align: right;
+  margin: 6px 0 16px;
+}
+
+.forgot-password span {
+  font-size: 14px;
+  color: #90caf9;
+  cursor: pointer;
+}
+
+.forgot-password span:hover {
+  text-decoration: underline;
+}

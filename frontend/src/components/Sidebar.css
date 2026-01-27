@@ -1,0 +1,52 @@
+/* ============================= */
+/* Sidebar Container             */
+/* ============================= */
+.sidebar {
+  position: fixed;
+  top: 60px;                 /* BELOW NAVBAR */
+  left: 0;
+  width: 220px;
+  height: calc(100vh - 60px);
+  background-color: #1e3c72;
+  padding-top: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+/* Logo */
+.sidebar-logo {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+/* ============================= */
+/* Menu                          */
+/* ============================= */
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  padding: 14px 20px;
+  font-size: 16px;
+  color: white;              /* 🔥 FIX: text visible */
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* Hover */
+.sidebar-menu li:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Active item */
+.sidebar-menu li.active {
+  background-color: rgba(255, 255, 255, 0.25);
+  font-weight: 600;
+}

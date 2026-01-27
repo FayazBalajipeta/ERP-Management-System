@@ -4,7 +4,7 @@ import "./Navbar.css";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  // ✅ SAFE read from localStorage
+  // Safe read from localStorage
   let user = null;
   const rawUser = localStorage.getItem("user");
 
@@ -23,14 +23,16 @@ const Navbar = () => {
 
   return (
     <div className="navbar">
+      {/* LEFT : LOGO */}
       <div className="navbar-left">
-        ⚙️ <span className="brand">SmartERP</span>
+        <span className="navbar-logo">⚙ SmartERP</span>
       </div>
 
+      {/* RIGHT : USER + LOGOUT */}
       <div className="navbar-right">
         {user && (
-          <span className="user-info">
-            {user.email || "User"} ({user.role || "user"})
+          <span className="navbar-user">
+            {user.role ? user.role.toUpperCase() : "USER"}
           </span>
         )}
 

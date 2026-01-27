@@ -5,7 +5,7 @@
   position: fixed;
   top: 60px;                 /* BELOW NAVBAR */
   left: 0;
-  width: 220px;
+  width: 250px;
   height: calc(100vh - 60px);
   background-color: #1e3c72;
   padding-top: 20px;
@@ -17,7 +17,7 @@
 /* Logo */
 .sidebar-logo {
   color: white;
-  font-size: 20px;
+  font-size: 35px;
   font-weight: 700;
   text-align: center;
   margin-bottom: 25px;
@@ -34,7 +34,7 @@
 
 .sidebar-menu li {
   padding: 14px 20px;
-  font-size: 16px;
+  font-size: 25px;
   color: white;              /* 🔥 FIX: text visible */
   cursor: pointer;
   transition: background 0.2s ease;

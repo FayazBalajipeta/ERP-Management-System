@@ -12,7 +12,7 @@ const Customers = () => {
 
   const token = localStorage.getItem("token");
 
-  // ✅ FIXED: useCallback
+  // Fetch customers
   const fetchCustomers = useCallback(async () => {
     const res = await axios.get("http://localhost:5000/api/customers", {
       headers: { Authorization: `Bearer ${token}` },
@@ -20,11 +20,11 @@ const Customers = () => {
     setCustomers(res.data);
   }, [token]);
 
-  // ✅ FIXED dependency warning
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
 
+  // Add / Update customer
   const saveCustomer = async () => {
     if (!name || !phone) {
       alert("Name and phone are required");
@@ -81,11 +81,28 @@ const Customers = () => {
     <div className="customers-container">
       <h2>Customers</h2>
 
+      {/* FORM */}
       <div className="customer-form">
-        <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
+        <input
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          placeholder="Phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+        <input
+          placeholder="Address"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
 
         <button onClick={saveCustomer}>
           {editId ? "Update" : "Add"}
@@ -98,6 +115,7 @@ const Customers = () => {
         )}
       </div>
 
+      {/* TABLE */}
       <table className="customer-table">
         <thead>
           <tr>
@@ -117,8 +135,17 @@ const Customers = () => {
               <td>{c.phone}</td>
               <td>{c.address}</td>
               <td>
-                <button onClick={() => editCustomer(c)}>Edit</button>
-                <button className="delete-btn" onClick={() => deleteCustomer(c._id)}>
+                <button
+                  className="action-btn edit-btn"
+                  onClick={() => editCustomer(c)}
+                >
+                  Edit
+                </button>
+
+                <button
+                  className="action-btn delete-btn"
+                  onClick={() => deleteCustomer(c._id)}
+                >
                   Delete
                 </button>
               </td>

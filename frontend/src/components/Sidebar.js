@@ -7,7 +7,6 @@ function Sidebar() {
 
   return (
     <div className="sidebar">
-      <h2 className="sidebar-logo">SmartERP</h2>
 
       <ul className="sidebar-menu">
         <li

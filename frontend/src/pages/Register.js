@@ -25,22 +25,20 @@ const handleRegister = async (e) => {
   }
 
   try {
-    const res = await axios.post("http://localhost:5000/api/register", {
+    await axios.post("http://localhost:5000/api/auth/register", {
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
-      password: formData.password
+      password: formData.password,
     });
 
-    // ✅ Auto-login
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem("role", res.data.role);
-
-    window.location.href = "/dashboard";
+    alert("Registration successful");
+    window.location.href = "/";
   } catch (err) {
     alert(err.response?.data?.message || "Registration failed");
   }
 };
+
 
 
   return (

@@ -26,6 +26,7 @@ app.use("/api/purchase-orders", require("./routes/purchaseOrderRoutes"));
 app.use("/api/grn", require("./routes/grnRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
 // Test
 app.get("/", (req, res) => {

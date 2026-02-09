@@ -1,47 +1,161 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import "./GRN.css";
 
 const GRN = () => {
-  const [purchaseOrderId, setPurchaseOrderId] = useState("");
+  const [grns, setGrns] = useState([]);
+  const [vendorName, setVendorName] = useState("");
+  const [productName, setProductName] = useState("");
+  const [quantityReceived, setQuantityReceived] = useState("");
+  const [pricePerUnit, setPricePerUnit] = useState("");
+  const [editId, setEditId] = useState(null);
+
   const token = localStorage.getItem("token");
 
-  const submitGRN = async () => {
-    if (!purchaseOrderId) {
-      alert("Enter Purchase Order ID");
-      return;
-    }
+  const fetchGRNs = useCallback(async () => {
+    const res = await axios.get("http://localhost:5000/api/grn", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setGrns(res.data);
+  }, [token]);
 
+  useEffect(() => {
+    fetchGRNs();
+  }, [fetchGRNs]);
+
+  const createOrUpdateGRN = async () => {
     try {
-      await axios.post(
-        "http://localhost:5000/api/grn",
-        {
-          purchaseOrder: purchaseOrderId,
-          receivedItems: [],
-        },
-        {
+      if (!vendorName || !productName || !quantityReceived || !pricePerUnit) {
+        alert("All fields required");
+        return;
+      }
+
+      const payload = {
+        vendorName,
+        productName,
+        quantityReceived,
+        pricePerUnit,
+      };
+
+      if (editId) {
+        await axios.put(`http://localhost:5000/api/grn/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      alert("GRN created successfully");
-      setPurchaseOrderId("");
-    } catch {
-      alert("Failed to create GRN");
+        });
+      } else {
+        await axios.post("http://localhost:5000/api/grn", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+
+      setVendorName("");
+      setProductName("");
+      setQuantityReceived("");
+      setPricePerUnit("");
+      setEditId(null);
+      fetchGRNs();
+    } catch (err) {
+      console.error("GRN ERROR 👉", err);
+      alert("GRN failed");
     }
   };
 
+  const editGRN = (g) => {
+    setEditId(g._id);
+    setVendorName(g.vendorName);
+    setProductName(g.productName);
+    setQuantityReceived(g.quantityReceived);
+    setPricePerUnit(g.pricePerUnit);
+  };
+
+  const deleteGRN = async (id) => {
+    if (!window.confirm("Delete this GRN?")) return;
+
+    await axios.delete(`http://localhost:5000/api/grn/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    fetchGRNs();
+  };
+
   return (
-    <div className="products-container">
-      <h2>Goods Receipt Note (GRN)</h2>
+    <div className="grn-page">
+      <h2>Goods Received Note (GRN)</h2>
 
-      <input
-        placeholder="Purchase Order ID"
-        value={purchaseOrderId}
-        onChange={(e) => setPurchaseOrderId(e.target.value)}
-      />
+      {/* Form */}
+      <div className="grn-form">
+        <input
+          placeholder="Vendor Name"
+          value={vendorName}
+          onChange={(e) => setVendorName(e.target.value)}
+        />
+        <input
+          placeholder="Product Name"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={quantityReceived}
+          onChange={(e) => setQuantityReceived(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="Price Per Unit"
+          value={pricePerUnit}
+          onChange={(e) => setPricePerUnit(e.target.value)}
+        />
+      </div>
 
-      <button onClick={submitGRN} style={{ marginLeft: 10 }}>
-        Create GRN
+      <button className="create-btn" onClick={createOrUpdateGRN}>
+        {editId ? "Update GRN" : "Create GRN"}
       </button>
+
+      {/* Table */}
+      <div className="grn-table-card">
+        <table className="grn-table">
+          <thead>
+            <tr>
+              <th>Vendor</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {grns.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="no-data">
+                  No GRNs Found
+                </td>
+              </tr>
+            ) : (
+              grns.map((g) => (
+                <tr key={g._id}>
+                  <td>{g.vendorName}</td>
+                  <td>{g.productName}</td>
+                  <td>{g.quantityReceived}</td>
+                  <td>₹{g.pricePerUnit}</td>
+                  <td>₹{g.totalAmount}</td>
+                  <td>
+                    <button className="edit-btn" onClick={() => editGRN(g)}>
+                      Edit
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteGRN(g._id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -2,16 +2,15 @@ const mongoose = require("mongoose");
 
 const grnSchema = new mongoose.Schema(
   {
-    purchaseOrder: {
+    vendorName: { type: String, required: true },
+    productName: { type: String, required: true },
+    quantityReceived: { type: Number, required: true },
+    pricePerUnit: { type: Number, required: true },
+    totalAmount: { type: Number, required: true },
+    receivedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "PurchaseOrder",
+      ref: "User",
     },
-    receivedItems: [
-      {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-        quantity: Number,
-      },
-    ],
   },
   { timestamps: true }
 );

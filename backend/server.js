@@ -17,16 +17,12 @@ mongoose
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use(cors());
-app.use(express.json());
-
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/sales-orders", require("./routes/salesOrderRoutes"));
-app.use("/api/purchase-orders", require("./routes/purchaseOrderRoutes"));
 app.use("/api/grn", require("./routes/grnRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
-app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/invoice", require("./routes/invoiceRoutes")); // ✅ REQUIRED
 
 // Test
 app.get("/", (req, res) => {

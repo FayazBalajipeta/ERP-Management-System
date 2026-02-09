@@ -1,0 +1,67 @@
+.invoice-container {
+  margin-left: 240px;
+  width: calc(100% - 240px);
+  padding: 32px 36px;
+  background: #f6f8fb;
+  min-height: calc(100vh - 70px);
+}
+
+.invoice-container h2 {
+  font-size: 35px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #1e3c72;
+}
+
+.invoice-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.invoice-form input {
+  padding: 12px 14px;
+  font-size: 20px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.invoice-form button {
+  grid-column: span 4;
+  height: 42px;
+  background: #1e3c72;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.invoice-form button:hover {
+  background: #16315d;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.invoice-table th {
+  background: #1e3c72;
+  color: white;
+  padding: 14px;
+  font-size: 20px;
+  text-align: left;
+}
+
+.invoice-table td {
+  padding: 14px;
+  font-size: 20px;
+  border-bottom: 1px solid #eee;
+}

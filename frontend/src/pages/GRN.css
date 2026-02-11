@@ -1,7 +1,7 @@
 /* ============================= */
-/* GRN Page                      */
+/* GRN Page Layout               */
 /* ============================= */
-.grn-page {
+.grn-container {
   margin-left: 240px;
   width: calc(100% - 240px);
   padding: 32px 36px;
@@ -11,7 +11,7 @@
 }
 
 /* Page Title */
-.grn-page h2 {
+.grn-container h2 {
   font-size: 35px;
   font-weight: 700;
   margin-bottom: 24px;
@@ -35,8 +35,8 @@
   border: 1px solid #ccc;
 }
 
-/* Create Button */
-.create-btn {
+/* Create Button (Same as Create Order) */
+.grn-create-btn {
   grid-column: span 4;
   height: 42px;
   background: #1e3c72;
@@ -46,9 +46,10 @@
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.create-btn:hover {
+.grn-create-btn:hover {
   background: #16315d;
 }
 
@@ -81,7 +82,8 @@
 /* ============================= */
 /* Action Buttons (Unified Size) */
 /* ============================= */
-.action-btn {
+.edit-btn,
+.delete-btn {
   min-width: 90px;
   height: 38px;
   display: inline-flex;
@@ -130,7 +132,7 @@
 /* Responsive                    */
 /* ============================= */
 @media (max-width: 768px) {
-  .grn-page {
+  .grn-container {
     margin-left: 0;
     width: 100%;
     padding: 20px;
@@ -140,7 +142,7 @@
     grid-template-columns: 1fr;
   }
 
-  .create-btn {
+  .grn-create-btn {
     grid-column: span 1;
   }
 }

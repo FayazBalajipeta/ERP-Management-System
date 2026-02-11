@@ -13,15 +13,27 @@ const GRN = () => {
   const token = localStorage.getItem("token");
 
   const fetchGRNs = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/grn", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setGrns(res.data);
+    try {
+      const res = await axios.get("http://localhost:5000/api/grn", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setGrns(res.data);
+    } catch (err) {
+      console.error("FETCH GRN ERROR 👉", err);
+    }
   }, [token]);
 
   useEffect(() => {
     fetchGRNs();
   }, [fetchGRNs]);
+
+  const resetForm = () => {
+    setVendorName("");
+    setProductName("");
+    setQuantityReceived("");
+    setPricePerUnit("");
+    setEditId(null);
+  };
 
   const createOrUpdateGRN = async () => {
     try {
@@ -33,8 +45,8 @@ const GRN = () => {
       const payload = {
         vendorName,
         productName,
-        quantityReceived,
-        pricePerUnit,
+        quantityReceived: Number(quantityReceived),
+        pricePerUnit: Number(pricePerUnit),
       };
 
       if (editId) {
@@ -47,11 +59,7 @@ const GRN = () => {
         });
       }
 
-      setVendorName("");
-      setProductName("");
-      setQuantityReceived("");
-      setPricePerUnit("");
-      setEditId(null);
+      resetForm();
       fetchGRNs();
     } catch (err) {
       console.error("GRN ERROR 👉", err);
@@ -70,18 +78,21 @@ const GRN = () => {
   const deleteGRN = async (id) => {
     if (!window.confirm("Delete this GRN?")) return;
 
-    await axios.delete(`http://localhost:5000/api/grn/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    fetchGRNs();
+    try {
+      await axios.delete(`http://localhost:5000/api/grn/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchGRNs();
+    } catch (err) {
+      console.error("DELETE GRN ERROR 👉", err);
+    }
   };
 
   return (
-    <div className="grn-page">
+    <div className="grn-container">
       <h2>Goods Received Note (GRN)</h2>
 
-      {/* Form */}
+      {/* ================= FORM ================= */}
       <div className="grn-form">
         <input
           placeholder="Vendor Name"
@@ -105,57 +116,60 @@ const GRN = () => {
           value={pricePerUnit}
           onChange={(e) => setPricePerUnit(e.target.value)}
         />
+
+        {/* Same style as Create Order */}
+        <button className="grn-create-btn" onClick={createOrUpdateGRN}>
+          {editId ? "Update GRN" : "Create GRN"}
+        </button>
       </div>
 
-      <button className="create-btn" onClick={createOrUpdateGRN}>
-        {editId ? "Update GRN" : "Create GRN"}
-      </button>
-
-      {/* Table */}
-      <div className="grn-table-card">
-        <table className="grn-table">
-          <thead>
+      {/* ================= TABLE ================= */}
+      <table className="grn-table">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {grns.length === 0 ? (
             <tr>
-              <th>Vendor</th>
-              <th>Product</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Total</th>
-              <th>Actions</th>
+              <td colSpan="6" className="no-data">
+                No GRNs Found
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {grns.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="no-data">
-                  No GRNs Found
+          ) : (
+            grns.map((g) => (
+              <tr key={g._id}>
+                <td>{g.vendorName}</td>
+                <td>{g.productName}</td>
+                <td>{g.quantityReceived}</td>
+                <td>₹{g.pricePerUnit}</td>
+                <td>
+                  ₹
+                  {g.totalAmount ??
+                    g.quantityReceived * g.pricePerUnit}
+                </td>
+                <td>
+                  <button className="edit-btn" onClick={() => editGRN(g)}>
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => deleteGRN(g._id)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
-            ) : (
-              grns.map((g) => (
-                <tr key={g._id}>
-                  <td>{g.vendorName}</td>
-                  <td>{g.productName}</td>
-                  <td>{g.quantityReceived}</td>
-                  <td>₹{g.pricePerUnit}</td>
-                  <td>₹{g.totalAmount}</td>
-                  <td>
-                    <button className="edit-btn" onClick={() => editGRN(g)}>
-                      Edit
-                    </button>
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteGRN(g._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };

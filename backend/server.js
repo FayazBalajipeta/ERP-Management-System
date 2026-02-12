@@ -42,7 +42,7 @@ app.get("/", (req, res) => {
 });
 
 // =============================
-// Global Error Handler (optional but pro-level)
+// Global Error Handler
 // =============================
 app.use((err, req, res, next) => {
   console.error("🔥 GLOBAL ERROR:", err.stack);

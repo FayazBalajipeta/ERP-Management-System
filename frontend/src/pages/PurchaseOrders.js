@@ -1,116 +1,170 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./PurchaseOrders.css";
 
-const PurchaseOrders = () => {
-  const [orders, setOrders] = useState([]);
-  const [vendorName, setVendorName] = useState("");
+function PurchaseOrders() {
+  const [supplierName, setSupplierName] = useState("");
   const [productName, setProductName] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [pricePerUnit, setPricePerUnit] = useState("");
+  const [status, setStatus] = useState("Pending");
+  const [orders, setOrders] = useState([]);
   const [editId, setEditId] = useState(null);
 
   const token = localStorage.getItem("token");
 
   const fetchOrders = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/purchase-orders", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setOrders(res.data);
+    try {
+      const res = await axios.get("http://localhost:5000/api/purchase-orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data);
+    } catch (err) {
+      console.error("FETCH PO ERROR:", err);
+    }
   }, [token]);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  const createOrUpdate = async () => {
-    if (!vendorName || !productName || !quantity || !pricePerUnit) {
+  const createOrUpdateOrder = async () => {
+    if (!supplierName || !productName || !quantity) {
       alert("All fields required");
       return;
     }
 
-    const payload = { vendorName, productName, quantity, pricePerUnit };
+    try {
+      if (editId) {
+        await axios.put(
+          `http://localhost:5000/api/purchase-orders/${editId}`,
+          { supplierName, productName, quantity, status },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        await axios.post(
+          "http://localhost:5000/api/purchase-orders",
+          { supplierName, productName, quantity, status },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
-    if (editId) {
-      await axios.put(`http://localhost:5000/api/purchase-orders/${editId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } else {
-      await axios.post("http://localhost:5000/api/purchase-orders", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      setSupplierName("");
+      setProductName("");
+      setQuantity("");
+      setStatus("Pending");
+      setEditId(null);
+      fetchOrders();
+    } catch (err) {
+      console.error("CREATE/UPDATE PO ERROR:", err);
     }
-
-    setVendorName("");
-    setProductName("");
-    setQuantity("");
-    setPricePerUnit("");
-    setEditId(null);
-    fetchOrders();
   };
 
-  const editOrder = (o) => {
-    setEditId(o._id);
-    setVendorName(o.vendorName);
-    setProductName(o.productName);
-    setQuantity(o.quantity);
-    setPricePerUnit(o.pricePerUnit);
+  const editOrder = (order) => {
+    setSupplierName(order.supplier);
+    setProductName(order.product);
+    setQuantity(order.quantity);
+    setStatus(order.status);
+    setEditId(order._id);
   };
 
   const deleteOrder = async (id) => {
-    if (!window.confirm("Delete this PO?")) return;
-    await axios.delete(`http://localhost:5000/api/purchase-orders/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchOrders();
+    try {
+      await axios.delete(`http://localhost:5000/api/purchase-orders/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchOrders();
+    } catch (err) {
+      console.error("DELETE PO ERROR:", err);
+    }
   };
 
   return (
-    <div className="purchase-orders-container">
+    <div className="po-container">
       <h2>Purchase Orders</h2>
 
       <div className="po-form">
-        <input placeholder="Vendor Name" value={vendorName} onChange={(e) => setVendorName(e.target.value)} />
-        <input placeholder="Product Name" value={productName} onChange={(e) => setProductName(e.target.value)} />
-        <input type="number" placeholder="Qty" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-        <input type="number" placeholder="Price Per Unit" value={pricePerUnit} onChange={(e) => setPricePerUnit(e.target.value)} />
-      </div>
+        <input
+          placeholder="Supplier Name"
+          value={supplierName}
+          onChange={(e) => setSupplierName(e.target.value)}
+        />
+        <input
+          placeholder="Product Name"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+        />
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
 
-      <button className="po-create-btn" onClick={createOrUpdate}>
-        {editId ? "Update PO" : "Create PO"}
-      </button>
+        <button className="po-create-btn" onClick={createOrUpdateOrder}>
+          {editId ? "Update Purchase Order" : "Create Purchase Order"}
+        </button>
+      </div>
 
       <table className="po-table">
         <thead>
           <tr>
-            <th>Vendor</th>
+            <th>Supplier</th>
             <th>Product</th>
             <th>Qty</th>
-            <th>Price</th>
-            <th>Total</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          {orders.map((o) => (
-            <tr key={o._id}>
-              <td>{o.vendorName}</td>
-              <td>{o.productName}</td>
-              <td>{o.quantity}</td>
-              <td>₹{o.pricePerUnit}</td>
-              <td>₹{o.totalAmount}</td>
-              <td>{o.status}</td>
-              <td>
-                <button className="edit-btn" onClick={() => editOrder(o)}>Edit</button>
-                <button className="delete-btn" onClick={() => deleteOrder(o._id)}>Delete</button>
+          {orders.length === 0 ? (
+            <tr>
+              <td colSpan="5" className="no-data">
+                No Purchase Orders
               </td>
             </tr>
-          ))}
+          ) : (
+            orders.map((order) => (
+              <tr key={order._id}>
+                <td>{order.supplier}</td>
+                <td>{order.product}</td>
+                <td>{order.quantity}</td>
+                <td>
+                  <span
+                    className={`status-pill ${
+                      order.status === "Approved"
+                        ? "approved"
+                        : order.status === "Rejected"
+                        ? "rejected"
+                        : "pending"
+                    }`}
+                  >
+                    {order.status.toUpperCase()}
+                  </span>
+                </td>
+                <td>
+                  <button className="edit-btn" onClick={() => editOrder(order)}>
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => deleteOrder(order._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
   );
-};
+}
 
 export default PurchaseOrders;

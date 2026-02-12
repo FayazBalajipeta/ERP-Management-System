@@ -1,17 +1,20 @@
-.purchase-orders-container {
+.po-container {
   margin-left: 240px;
   width: calc(100% - 240px);
   padding: 32px 36px;
   background: #f6f8fb;
   min-height: calc(100vh - 70px);
+  box-sizing: border-box;
 }
 
-.purchase-orders-container h2 {
+.po-container h2 {
   font-size: 35px;
-  color: #1e3c72;
+  font-weight: 700;
   margin-bottom: 24px;
+  color: #1e3c72;
 }
 
+/* FORM */
 .po-form {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -19,29 +22,36 @@
   margin-bottom: 24px;
 }
 
-.po-form input {
+.po-form input,
+.po-form select {
   padding: 12px 14px;
   font-size: 20px;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
 
+/* BUTTON */
 .po-create-btn {
+  grid-column: span 4;
   height: 42px;
-  width: 100%;
   background: #1e3c72;
   color: white;
-  border-radius: 6px;
   border: none;
+  border-radius: 6px;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 20px;
+  cursor: pointer;
 }
 
+.po-create-btn:hover {
+  background: #16315d;
+}
+
+/* TABLE */
 .po-table {
   width: 100%;
-  background: white;
   border-collapse: collapse;
+  background: white;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -59,4 +69,78 @@
   padding: 14px;
   font-size: 20px;
   border-bottom: 1px solid #eee;
+}
+
+/* STATUS PILL */
+.status-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.status-pill.pending {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.status-pill.approved {
+  background: #bbf7d0;
+  color: #065f46;
+}
+
+.status-pill.rejected {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+/* ACTION BUTTONS */
+.edit-btn,
+.delete-btn {
+  min-width: 90px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.edit-btn {
+  background: #ffc107;
+  margin-right: 10px;
+}
+
+.delete-btn {
+  background: #ff5252;
+  color: white;
+}
+
+/* EMPTY */
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #64748b;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .po-container {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .po-form {
+    grid-template-columns: 1fr;
+  }
+
+  .po-create-btn {
+    grid-column: span 1;
+  }
 }

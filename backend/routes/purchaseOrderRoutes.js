@@ -1,15 +1,69 @@
 const router = require("express").Router();
 const PurchaseOrder = require("../models/PurchaseOrder");
-const { protect, allowRoles } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
-router.post("/", protect, allowRoles("Purchase", "Admin"), async (req, res) => {
-  const po = await PurchaseOrder.create(req.body);
-  res.status(201).json(po);
+// GET all
+router.get("/", protect, async (req, res) => {
+  try {
+    const orders = await PurchaseOrder.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch purchase orders" });
+  }
 });
 
-router.get("/", protect, allowRoles("Admin", "Inventory"), async (req, res) => {
-  const pos = await PurchaseOrder.find().populate("products.product");
-  res.json(pos);
+// CREATE
+router.post("/", protect, async (req, res) => {
+  try {
+    const { supplierName, productName, quantity, status } = req.body;
+
+    if (!supplierName || !productName || !quantity) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const order = await PurchaseOrder.create({
+      supplier: supplierName,
+      product: productName,
+      quantity,
+      status: status || "Pending",
+    });
+
+    res.status(201).json(order);
+  } catch (err) {
+    res.status(500).json({ message: "Create purchase order failed" });
+  }
+});
+
+// UPDATE
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const { supplierName, productName, quantity, status } = req.body;
+
+    const updated = await PurchaseOrder.findByIdAndUpdate(
+      req.params.id,
+      {
+        supplier: supplierName,
+        product: productName,
+        quantity,
+        status,
+      },
+      { new: true }
+    );
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "Update failed" });
+  }
+});
+
+// DELETE
+router.delete("/:id", protect, async (req, res) => {
+  try {
+    await PurchaseOrder.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Delete failed" });
+  }
 });
 
 module.exports = router;

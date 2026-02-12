@@ -11,6 +11,7 @@ import SalesOrders from "./pages/SalesOrders";
 import GRN from "./pages/GRN";
 import Customers from "./pages/Customers";
 import Invoice from "./pages/Invoice";
+import PurchaseOrders from "./pages/PurchaseOrders";
 
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
@@ -21,8 +22,8 @@ const AppLayout = ({ children }) => {
 
   return (
     <>
-      <Navbar />
-      <Sidebar open={sidebarOpen} toggle={() => setSidebarOpen(!sidebarOpen)} />
+      <Navbar toggleSidebar={() => setSidebarOpen((o) => !o)} />
+      <Sidebar open={sidebarOpen} toggle={() => setSidebarOpen((o) => !o)} />
 
       <div className={`app-content ${sidebarOpen ? "with-sidebar" : "full"}`}>
         {children}
@@ -35,16 +36,19 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Public */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
+        {/* Protected */}
         <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
         <Route path="/products" element={<ProtectedRoute><AppLayout><Products /></AppLayout></ProtectedRoute>} />
         <Route path="/sales-orders" element={<ProtectedRoute><AppLayout><SalesOrders /></AppLayout></ProtectedRoute>} />
         <Route path="/customers" element={<ProtectedRoute><AppLayout><Customers /></AppLayout></ProtectedRoute>} />
         <Route path="/grn" element={<ProtectedRoute><AppLayout><GRN /></AppLayout></ProtectedRoute>} />
         <Route path="/invoice" element={<ProtectedRoute><AppLayout><Invoice /></AppLayout></ProtectedRoute>} />
+        <Route path="/purchase-orders" element={<ProtectedRoute><AppLayout><PurchaseOrders /></AppLayout></ProtectedRoute>} />
       </Routes>
     </Router>
   );

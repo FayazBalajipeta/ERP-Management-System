@@ -2,19 +2,10 @@ const mongoose = require("mongoose");
 
 const purchaseOrderSchema = new mongoose.Schema(
   {
-    supplierName: String,
-    products: [
-      {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-        quantity: Number,
-        price: Number,
-      },
-    ],
-    status: {
-      type: String,
-      enum: ["Ordered", "Received"],
-      default: "Ordered",
-    },
+    supplier: { type: String, required: true },
+    product: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    status: { type: String, default: "Pending" }
   },
   { timestamps: true }
 );

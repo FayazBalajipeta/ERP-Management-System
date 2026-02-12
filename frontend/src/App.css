@@ -1,17 +1,39 @@
+/* ============================= */
+/* App Content Layout            */
+/* ============================= */
+
 .app-content {
-  margin-top: 70px;   /* navbar height */
+  margin-top: 70px;                 /* Navbar height */
   padding: 30px;
   min-height: calc(100vh - 70px);
   background: #f4f7fb;
+  box-sizing: border-box;
+
   transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
+/* When Sidebar is Open */
 .app-content.with-sidebar {
-  margin-left: 260px;
+  margin-left: 260px;               /* Sidebar width */
   width: calc(100% - 260px);
 }
 
+/* When Sidebar is Closed */
 .app-content.full {
   margin-left: 0;
   width: 100%;
+}
+
+/* ============================= */
+/* Smooth Responsive Handling    */
+/* ============================= */
+@media (max-width: 768px) {
+  .app-content {
+    padding: 20px;
+  }
+
+  .app-content.with-sidebar {
+    margin-left: 0;
+    width: 100%;
+  }
 }

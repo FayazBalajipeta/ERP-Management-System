@@ -32,6 +32,10 @@ function Sidebar({ open, toggle }) {
             🧾 Sales Orders
           </li>
 
+<li className={location.pathname === "/purchase-orders" ? "active" : ""} onClick={() => navigate("/purchase-orders")}>
+            🛒 Purchase Orders
+          </li>
+
           <li className={location.pathname === "/grn" ? "active" : ""} onClick={() => navigate("/grn")}>
             🚚 GRN
           </li>
@@ -40,9 +44,7 @@ function Sidebar({ open, toggle }) {
             💳 Invoice
           </li>
 
-          <li className={location.pathname === "/purchase-orders" ? "active" : ""} onClick={() => navigate("/purchase-orders")}>
-            🛒 Purchase Orders
-          </li>
+          
         </ul>
       </div>
     </>

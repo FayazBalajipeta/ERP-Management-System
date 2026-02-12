@@ -1,16 +1,31 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./GRN.css";
 
 const GRN = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [grns, setGrns] = useState([]);
   const [vendorName, setVendorName] = useState("");
   const [productName, setProductName] = useState("");
   const [quantityReceived, setQuantityReceived] = useState("");
   const [pricePerUnit, setPricePerUnit] = useState("");
+  const [purchaseOrderId, setPurchaseOrderId] = useState(null);
   const [editId, setEditId] = useState(null);
 
   const token = localStorage.getItem("token");
+
+  // 🔹 Prefill when coming from Purchase Order page
+  useEffect(() => {
+    if (location.state?.purchaseOrderId) {
+      setPurchaseOrderId(location.state.purchaseOrderId);
+      setVendorName(location.state.vendorName || "");
+      setProductName(location.state.productName || "");
+      setQuantityReceived(location.state.quantity || "");
+    }
+  }, [location.state]);
 
   const fetchGRNs = useCallback(async () => {
     try {
@@ -32,6 +47,7 @@ const GRN = () => {
     setProductName("");
     setQuantityReceived("");
     setPricePerUnit("");
+    setPurchaseOrderId(null);
     setEditId(null);
   };
 
@@ -47,6 +63,7 @@ const GRN = () => {
         productName,
         quantityReceived: Number(quantityReceived),
         pricePerUnit: Number(pricePerUnit),
+        purchaseOrderId, // 🔗 link PO → GRN
       };
 
       if (editId) {
@@ -57,10 +74,20 @@ const GRN = () => {
         await axios.post("http://localhost:5000/api/grn", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        // 🔥 Update Purchase Order status to RECEIVED
+        if (purchaseOrderId) {
+          await axios.put(
+            `http://localhost:5000/api/purchase-orders/${purchaseOrderId}`,
+            { status: "Received" },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
       }
 
       resetForm();
       fetchGRNs();
+      navigate("/grn"); // clear state
     } catch (err) {
       console.error("GRN ERROR 👉", err);
       alert("GRN failed");
@@ -73,6 +100,7 @@ const GRN = () => {
     setProductName(g.productName);
     setQuantityReceived(g.quantityReceived);
     setPricePerUnit(g.pricePerUnit);
+    setPurchaseOrderId(g.purchaseOrderId || null);
   };
 
   const deleteGRN = async (id) => {
@@ -117,7 +145,12 @@ const GRN = () => {
           onChange={(e) => setPricePerUnit(e.target.value)}
         />
 
-        {/* Same style as Create Order */}
+        {purchaseOrderId && (
+          <div className="linked-po">
+            Linked PO ID: {purchaseOrderId}
+          </div>
+        )}
+
         <button className="grn-create-btn" onClick={createOrUpdateGRN}>
           {editId ? "Update GRN" : "Create GRN"}
         </button>
@@ -132,13 +165,14 @@ const GRN = () => {
             <th>Qty</th>
             <th>Price</th>
             <th>Total</th>
+            <th>Linked PO</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {grns.length === 0 ? (
             <tr>
-              <td colSpan="6" className="no-data">
+              <td colSpan="7" className="no-data">
                 No GRNs Found
               </td>
             </tr>
@@ -149,10 +183,13 @@ const GRN = () => {
                 <td>{g.productName}</td>
                 <td>{g.quantityReceived}</td>
                 <td>₹{g.pricePerUnit}</td>
+                <td>₹{g.totalAmount ?? g.quantityReceived * g.pricePerUnit}</td>
                 <td>
-                  ₹
-                  {g.totalAmount ??
-                    g.quantityReceived * g.pricePerUnit}
+                  {g.purchaseOrderId ? (
+                    <span className="po-link">Linked</span>
+                  ) : (
+                    <span className="po-unlinked">Manual</span>
+                  )}
                 </td>
                 <td>
                   <button className="edit-btn" onClick={() => editGRN(g)}>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./PurchaseOrders.css";
 
 function PurchaseOrders() {
@@ -11,6 +12,7 @@ function PurchaseOrders() {
   const [editId, setEditId] = useState(null);
 
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -68,6 +70,8 @@ function PurchaseOrders() {
   };
 
   const deleteOrder = async (id) => {
+    if (!window.confirm("Delete this Purchase Order?")) return;
+
     try {
       await axios.delete(`http://localhost:5000/api/purchase-orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -82,6 +86,7 @@ function PurchaseOrders() {
     <div className="po-container">
       <h2>Purchase Orders</h2>
 
+      {/* ===== FORM ===== */}
       <div className="po-form">
         <input
           placeholder="Supplier Name"
@@ -110,6 +115,7 @@ function PurchaseOrders() {
         </button>
       </div>
 
+      {/* ===== TABLE ===== */}
       <table className="po-table">
         <thead>
           <tr>
@@ -117,6 +123,7 @@ function PurchaseOrders() {
             <th>Product</th>
             <th>Qty</th>
             <th>Status</th>
+            <th>GRN</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -124,7 +131,7 @@ function PurchaseOrders() {
         <tbody>
           {orders.length === 0 ? (
             <tr>
-              <td colSpan="5" className="no-data">
+              <td colSpan="6" className="no-data">
                 No Purchase Orders
               </td>
             </tr>
@@ -141,12 +148,38 @@ function PurchaseOrders() {
                         ? "approved"
                         : order.status === "Rejected"
                         ? "rejected"
+                        : order.status === "Received"
+                        ? "approved"
                         : "pending"
                     }`}
                   >
                     {order.status.toUpperCase()}
                   </span>
                 </td>
+
+                {/* 🔗 LINK TO GRN */}
+                <td>
+                  {order.status !== "Received" ? (
+                    <button
+                      className="link-btn"
+                      onClick={() =>
+                        navigate("/grn", {
+                          state: {
+                            purchaseOrderId: order._id,
+                            vendorName: order.supplier,
+                            productName: order.product,
+                            quantity: order.quantity,
+                          },
+                        })
+                      }
+                    >
+                      Create GRN
+                    </button>
+                  ) : (
+                    <span className="completed-text">Completed</span>
+                  )}
+                </td>
+
                 <td>
                   <button className="edit-btn" onClick={() => editOrder(order)}>
                     Edit

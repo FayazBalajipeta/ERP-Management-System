@@ -7,9 +7,12 @@ const grnSchema = new mongoose.Schema(
     quantityReceived: { type: Number, required: true },
     pricePerUnit: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
-    receivedBy: {
+
+    // 🔗 LINK TO PURCHASE ORDER
+    purchaseOrder: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "PurchaseOrder",
+      required: true,
     },
   },
   { timestamps: true }

@@ -1,11 +1,16 @@
+/* ============================= */
+/* Invoice Page Layout           */
+/* ============================= */
 .invoice-container {
   margin-left: 240px;
   width: calc(100% - 240px);
   padding: 32px 36px;
   background: #f6f8fb;
   min-height: calc(100vh - 70px);
+  box-sizing: border-box;
 }
 
+/* Page Title */
 .invoice-container h2 {
   font-size: 35px;
   font-weight: 700;
@@ -13,11 +18,14 @@
   color: #1e3c72;
 }
 
+/* ============================= */
+/* Invoice Form                  */
+/* ============================= */
 .invoice-form {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .invoice-form input {
@@ -27,7 +35,10 @@
   border: 1px solid #ccc;
 }
 
-.invoice-form button {
+/* ============================= */
+/* Create Invoice Button         */
+/* ============================= */
+.invoice-create-btn {
   grid-column: span 4;
   height: 42px;
   background: #1e3c72;
@@ -37,12 +48,17 @@
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
+  margin-bottom: 24px;
+  transition: background 0.2s ease;
 }
 
-.invoice-form button:hover {
+.invoice-create-btn:hover {
   background: #16315d;
 }
 
+/* ============================= */
+/* Invoice Table                 */
+/* ============================= */
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
@@ -64,4 +80,53 @@
   padding: 14px;
   font-size: 20px;
   border-bottom: 1px solid #eee;
+}
+
+/* ============================= */
+/* Download Button               */
+/* ============================= */
+.download-btn {
+  min-width: 110px;
+  height: 38px;
+  background: #10b981;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  background: #059669;
+}
+
+/* ============================= */
+/* Empty State                   */
+/* ============================= */
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #64748b;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* ============================= */
+/* Responsive                    */
+/* ============================= */
+@media (max-width: 768px) {
+  .invoice-container {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .invoice-form {
+    grid-template-columns: 1fr;
+  }
+
+  .invoice-create-btn {
+    grid-column: span 1;
+  }
 }

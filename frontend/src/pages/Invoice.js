@@ -96,7 +96,10 @@ const Invoice = () => {
           value={pricePerUnit}
           onChange={(e) => setPricePerUnit(e.target.value)}
         />
-        <button onClick={createInvoice}>Create Invoice</button>
+        <button className="invoice-create-btn" onClick={createInvoice}>
+  Create Invoice
+</button>
+
       </div>
 
       <table className="invoice-table">

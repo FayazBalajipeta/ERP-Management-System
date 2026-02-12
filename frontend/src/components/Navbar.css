@@ -2,27 +2,49 @@
 /* Navbar Container              */
 /* ============================= */
 .navbar {
-  height: 70px;
-  background-color: #1e3c72;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: linear-gradient(90deg, #0f2a52, #1e3c72);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 20px;             /* 🔥 Reduced padding to fit screen */
   color: white;
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
 }
 
 /* ============================= */
-/* Left Section (Logo)           */
+/* Left Section (Logo + Menu)    */
 /* ============================= */
 .navbar-left {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.menu-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 18px;
+  color: white;
+}
+
+.menu-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .navbar-logo {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -34,53 +56,72 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 /* ============================= */
 /* User Role Badge               */
 /* ============================= */
 .navbar-user {
-  min-width: 110px;
-  height: 42px;
-  padding: 0 16px;
+  min-width: 70px;
+  height: 32px;
+  padding: 0 12px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
 
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
 }
 
 /* ============================= */
-/* Logout Button                 */
+/* Logout Button (FIXED)         */
 /* ============================= */
 .logout-btn {
-  min-width: 100px;
-  height: 42px;
+  min-width: 74px;
+  height: 32px;
+
+  padding: 0 12px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
 
-  background: #ff5252;
+  background: linear-gradient(135deg, #ff4b4b, #ff6b6b);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;      /* 🔥 pill style */
   cursor: pointer;
 
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .logout-btn:hover {
-  background: #e63b3b;
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255, 75, 75, 0.5);
+}
+
+/* ============================= */
+/* Responsive                    */
+/* ============================= */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 12px;
+  }
+
+  .navbar-logo {
+    font-size: 17px;
+  }
+
+  .navbar-user {
+    display: none;   /* hide admin badge on small screens */
+  }
 }

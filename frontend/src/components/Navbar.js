@@ -25,7 +25,7 @@ const Navbar = () => {
     <div className="navbar">
       {/* LEFT : LOGO */}
       <div className="navbar-left">
-        <span className="navbar-logo">⚙ SmartERP</span>
+       
       </div>
 
       {/* RIGHT : USER + LOGOUT */}

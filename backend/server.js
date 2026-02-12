@@ -32,6 +32,7 @@ app.use("/api/sales-orders", require("./routes/salesOrderRoutes"));
 app.use("/api/grn", require("./routes/grnRoutes"));
 app.use("/api/invoice", require("./routes/invoiceRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+app.use("/api/purchase-orders", require("./routes/purchaseOrderRoutes"));
 
 // =============================
 // Health Check

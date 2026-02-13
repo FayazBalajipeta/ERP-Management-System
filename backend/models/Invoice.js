@@ -7,6 +7,13 @@ const invoiceSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     price: { type: Number, required: true },
     total: { type: Number, required: true },
+
+    // 🔗 Link Invoice to Sales Order (optional)
+    salesOrderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SalesOrder",
+      default: null,
+    },
   },
   { timestamps: true }
 );

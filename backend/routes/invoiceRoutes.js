@@ -1,22 +1,32 @@
 const router = require("express").Router();
 const Invoice = require("../models/Invoice");
+const SalesOrder = require("../models/SalesOrder"); // 🔗 Link to Sales Orders
 const PDFDocument = require("pdfkit");
 const { protect } = require("../middleware/authMiddleware");
 
-// GET all invoices
+// ==============================
+// GET all invoices (with Sales Order link)
+// ==============================
 router.get("/", protect, async (req, res) => {
   try {
-    const invoices = await Invoice.find().sort({ createdAt: -1 });
+    const invoices = await Invoice.find()
+      .populate("salesOrderId") // 🔗 populate linked sales order
+      .sort({ createdAt: -1 });
+
     res.json(invoices);
   } catch (err) {
+    console.error("FETCH INVOICE ERROR:", err);
     res.status(500).json({ message: "Failed to fetch invoices" });
   }
 });
 
-// CREATE invoice
+// ==============================
+// CREATE invoice (link to sales order optional)
+// ==============================
 router.post("/", protect, async (req, res) => {
   try {
-    const { customerName, productName, quantity, price } = req.body;
+    const { customerName, productName, quantity, price, salesOrderId } =
+      req.body;
 
     if (!customerName || !productName || !quantity || !price) {
       return res.status(400).json({ message: "All fields required" });
@@ -27,21 +37,34 @@ router.post("/", protect, async (req, res) => {
     const invoice = await Invoice.create({
       customer: customerName,
       product: productName,
-      quantity,
-      price,
+      quantity: Number(quantity),
+      price: Number(price),
       total,
+      salesOrderId: salesOrderId || null, // 🔗 optional link
     });
+
+    // 🔥 Auto mark Sales Order as Invoiced (optional but pro)
+    if (salesOrderId) {
+      await SalesOrder.findByIdAndUpdate(salesOrderId, {
+        status: "Invoiced",
+      });
+    }
 
     res.status(201).json(invoice);
   } catch (err) {
+    console.error("CREATE INVOICE ERROR:", err);
     res.status(500).json({ message: "Create invoice failed" });
   }
 });
 
-// UPDATE
+// ==============================
+// UPDATE invoice (including sales order link)
+// ==============================
 router.put("/:id", protect, async (req, res) => {
   try {
-    const { customerName, productName, quantity, price } = req.body;
+    const { customerName, productName, quantity, price, salesOrderId } =
+      req.body;
+
     const total = Number(quantity) * Number(price);
 
     const invoice = await Invoice.findByIdAndUpdate(
@@ -49,25 +72,30 @@ router.put("/:id", protect, async (req, res) => {
       {
         customer: customerName,
         product: productName,
-        quantity,
-        price,
+        quantity: Number(quantity),
+        price: Number(price),
         total,
+        salesOrderId: salesOrderId || null, // 🔗 update link
       },
       { new: true }
     );
 
     res.json(invoice);
   } catch (err) {
+    console.error("UPDATE INVOICE ERROR:", err);
     res.status(500).json({ message: "Update failed" });
   }
 });
 
-// DELETE
+// ==============================
+// DELETE invoice
+// ==============================
 router.delete("/:id", protect, async (req, res) => {
   try {
     await Invoice.findByIdAndDelete(req.params.id);
     res.json({ message: "Invoice deleted" });
   } catch (err) {
+    console.error("DELETE INVOICE ERROR:", err);
     res.status(500).json({ message: "Delete failed" });
   }
 });
@@ -77,7 +105,9 @@ router.delete("/:id", protect, async (req, res) => {
 // ==============================
 router.get("/:id/pdf", protect, async (req, res) => {
   try {
-    const invoice = await Invoice.findById(req.params.id);
+    const invoice = await Invoice.findById(req.params.id).populate(
+      "salesOrderId"
+    );
 
     if (!invoice) {
       return res.status(404).json({ message: "Invoice not found" });
@@ -93,7 +123,6 @@ router.get("/:id/pdf", protect, async (req, res) => {
 
     doc.pipe(res);
 
-    // Logo / Header
     doc.fontSize(24).text("SmartERP Invoice", { align: "center" });
     doc.moveDown();
 
@@ -110,6 +139,13 @@ router.get("/:id/pdf", protect, async (req, res) => {
     doc.fontSize(16).text(`Total Amount: ₹${invoice.total}`, {
       underline: true,
     });
+
+    if (invoice.salesOrderId) {
+      doc.moveDown();
+      doc
+        .fontSize(12)
+        .text(`Linked Sales Order ID: ${invoice.salesOrderId._id}`);
+    }
 
     doc.moveDown(2);
     doc.text("Thank you for your business!", { align: "center" });

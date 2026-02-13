@@ -4,7 +4,9 @@ import "./Invoice.css";
 
 function Invoice() {
   const [invoices, setInvoices] = useState([]);
+  const [salesOrders, setSalesOrders] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [salesOrderId, setSalesOrderId] = useState("");
 
   const [form, setForm] = useState({
     customerName: "",
@@ -19,55 +21,80 @@ function Invoice() {
   // Fetch Invoices
   // =========================
   const fetchInvoices = useCallback(async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/invoice", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setInvoices(res.data);
-    } catch (err) {
-      console.error("FETCH INVOICE ERROR:", err);
-    }
+    const res = await axios.get("http://localhost:5000/api/invoice", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setInvoices(res.data);
+  }, [token]);
+
+  // =========================
+  // Fetch Sales Orders
+  // =========================
+  const fetchSalesOrders = useCallback(async () => {
+    const res = await axios.get("http://localhost:5000/api/sales-orders", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setSalesOrders(res.data);
   }, [token]);
 
   useEffect(() => {
     fetchInvoices();
-  }, [fetchInvoices]);
+    fetchSalesOrders();
+  }, [fetchInvoices, fetchSalesOrders]);
+
+  // =========================
+  // Auto Prefill on Sales Order Select
+  // =========================
+  const handleSalesOrderSelect = (e) => {
+    const soId = e.target.value;
+    setSalesOrderId(soId);
+
+    const so = salesOrders.find((o) => o._id === soId);
+    if (so) {
+      setForm({
+        customerName: so.customerName,
+        productName: so.productName,
+        quantity: so.quantity,
+        price: "",
+      });
+    }
+  };
 
   // =========================
   // Create / Update
   // =========================
   const handleSubmit = async () => {
-    try {
-      if (!form.customerName || !form.productName || !form.quantity || !form.price) {
-        alert("All fields required");
-        return;
-      }
-
-      if (editId) {
-        await axios.put(
-          `http://localhost:5000/api/invoice/${editId}`,
-          form,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        await axios.post("http://localhost:5000/api/invoice", form, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
-
-      setForm({
-        customerName: "",
-        productName: "",
-        quantity: "",
-        price: "",
-      });
-
-      setEditId(null);
-      fetchInvoices();
-    } catch (err) {
-      console.error("CREATE/UPDATE INVOICE ERROR:", err);
-      alert("Invoice failed. Check backend logs.");
+    if (!form.customerName || !form.productName || !form.quantity || !form.price) {
+      alert("All fields required");
+      return;
     }
+
+    const payload = {
+      ...form,
+      salesOrderId: salesOrderId || null,
+    };
+
+    if (editId) {
+      await axios.put(
+        `http://localhost:5000/api/invoice/${editId}`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } else {
+      await axios.post("http://localhost:5000/api/invoice", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }
+
+    setForm({
+      customerName: "",
+      productName: "",
+      quantity: "",
+      price: "",
+    });
+    setSalesOrderId("");
+    setEditId(null);
+    fetchInvoices();
   };
 
   // =========================
@@ -75,11 +102,12 @@ function Invoice() {
   // =========================
   const handleEdit = (invoice) => {
     setEditId(invoice._id);
+    setSalesOrderId(invoice.salesOrderId?._id || "");
     setForm({
-      customerName: invoice.customer || "",
-      productName: invoice.product || "",
-      quantity: invoice.quantity?.toString() || "",
-      price: invoice.price?.toString() || "",
+      customerName: invoice.customer,
+      productName: invoice.product,
+      quantity: invoice.quantity,
+      price: invoice.price,
     });
   };
 
@@ -88,73 +116,71 @@ function Invoice() {
   // =========================
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this invoice?")) return;
-
-    try {
-      await axios.delete(`http://localhost:5000/api/invoice/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchInvoices();
-    } catch (err) {
-      console.error("DELETE INVOICE ERROR:", err);
-    }
+    await axios.delete(`http://localhost:5000/api/invoice/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchInvoices();
   };
 
   // =========================
   // PDF Download
   // =========================
   const downloadPDF = async (id) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/invoice/${id}/pdf`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const res = await fetch(`http://localhost:5000/api/invoice/${id}/pdf`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `invoice-${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error("PDF DOWNLOAD ERROR:", err);
-      alert("PDF download failed");
-    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice-${id}.pdf`;
+    a.click();
   };
 
   return (
     <div className="invoice-container">
-      <h2>Invoice</h2>
+      <h2 className="page-title">Invoice</h2>
 
-      {/* ========================= */}
-      {/* Form */}
-      {/* ========================= */}
-      <div className="invoice-form">
+      {/* ================= FORM ================= */}
+      <div className="invoice-form professional-card">
+        <select value={salesOrderId} onChange={handleSalesOrderSelect}>
+          <option value="">Link to Sales Order (optional)</option>
+          {salesOrders.map((so) => (
+            <option key={so._id} value={so._id}>
+              {so.customerName} - {so.productName}
+            </option>
+          ))}
+        </select>
+
         <input
           placeholder="Customer Name"
           value={form.customerName}
+          disabled={!!salesOrderId}
           onChange={(e) =>
             setForm({ ...form, customerName: e.target.value })
           }
         />
+
         <input
           placeholder="Product Name"
           value={form.productName}
+          disabled={!!salesOrderId}
           onChange={(e) =>
             setForm({ ...form, productName: e.target.value })
           }
         />
+
         <input
           type="number"
           placeholder="Quantity"
           value={form.quantity}
+          disabled={!!salesOrderId}
           onChange={(e) =>
             setForm({ ...form, quantity: e.target.value })
           }
         />
+
         <input
           type="number"
           placeholder="Price Per Unit"
@@ -169,16 +195,15 @@ function Invoice() {
         </button>
       </div>
 
-      {/* ========================= */}
-      {/* Table */}
-      {/* ========================= */}
-      <table className="invoice-table">
+      {/* ================= TABLE ================= */}
+      <table className="invoice-table professional-table">
         <thead>
           <tr>
             <th>Customer</th>
             <th>Product</th>
             <th>Qty</th>
             <th>Total</th>
+            <th>Linked SO</th>
             <th>PDF</th>
             <th>Actions</th>
           </tr>
@@ -186,7 +211,7 @@ function Invoice() {
         <tbody>
           {invoices.length === 0 ? (
             <tr>
-              <td colSpan="6" className="no-data">No Invoices</td>
+              <td colSpan="7" className="no-data">No Invoices</td>
             </tr>
           ) : (
             invoices.map((inv) => (
@@ -195,18 +220,15 @@ function Invoice() {
                 <td>{inv.product}</td>
                 <td>{inv.quantity}</td>
                 <td>₹{inv.total}</td>
+                <td>{inv.salesOrderId ? "Linked" : "Manual"}</td>
                 <td>
                   <button className="download-btn" onClick={() => downloadPDF(inv._id)}>
                     Download
                   </button>
                 </td>
                 <td>
-                  <button className="edit-btn" onClick={() => handleEdit(inv)}>
-                    Edit
-                  </button>
-                  <button className="delete-btn" onClick={() => handleDelete(inv._id)}>
-                    Delete
-                  </button>
+                  <button className="edit-btn" onClick={() => handleEdit(inv)}>Edit</button>
+                  <button className="delete-btn" onClick={() => handleDelete(inv._id)}>Delete</button>
                 </td>
               </tr>
             ))

@@ -17,16 +17,21 @@ const GRN = () => {
 
   const token = localStorage.getItem("token");
 
-  // 🔹 Prefill when coming from Purchase Order page
+  // ================================
+  // Prefill when coming from PO page
+  // ================================
   useEffect(() => {
     if (location.state?.purchaseOrderId) {
-      setPurchaseOrderId(location.state.purchaseOrderId);
+      setPurchaseOrderId(location.state.purchaseOrderId || null);
       setVendorName(location.state.vendorName || "");
       setProductName(location.state.productName || "");
-      setQuantityReceived(location.state.quantity || "");
+      setQuantityReceived(location.state.quantity?.toString() || "");
     }
   }, [location.state]);
 
+  // ================================
+  // Fetch GRNs
+  // ================================
   const fetchGRNs = useCallback(async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/grn", {
@@ -42,6 +47,9 @@ const GRN = () => {
     fetchGRNs();
   }, [fetchGRNs]);
 
+  // ================================
+  // Reset Form
+  // ================================
   const resetForm = () => {
     setVendorName("");
     setProductName("");
@@ -51,6 +59,9 @@ const GRN = () => {
     setEditId(null);
   };
 
+  // ================================
+  // Create / Update GRN
+  // ================================
   const createOrUpdateGRN = async () => {
     try {
       if (!vendorName || !productName || !quantityReceived || !pricePerUnit) {
@@ -63,7 +74,7 @@ const GRN = () => {
         productName,
         quantityReceived: Number(quantityReceived),
         pricePerUnit: Number(pricePerUnit),
-        purchaseOrderId, // 🔗 link PO → GRN
+        purchaseOrderId: purchaseOrderId || null,
       };
 
       if (editId) {
@@ -75,7 +86,7 @@ const GRN = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // 🔥 Update Purchase Order status to RECEIVED
+        // 🔥 Update Purchase Order status after GRN created
         if (purchaseOrderId) {
           await axios.put(
             `http://localhost:5000/api/purchase-orders/${purchaseOrderId}`,
@@ -87,22 +98,28 @@ const GRN = () => {
 
       resetForm();
       fetchGRNs();
-      navigate("/grn"); // clear state
+      navigate("/grn", { replace: true }); // clear navigation state
     } catch (err) {
       console.error("GRN ERROR 👉", err);
       alert("GRN failed");
     }
   };
 
+  // ================================
+  // Edit GRN
+  // ================================
   const editGRN = (g) => {
     setEditId(g._id);
-    setVendorName(g.vendorName);
-    setProductName(g.productName);
-    setQuantityReceived(g.quantityReceived);
-    setPricePerUnit(g.pricePerUnit);
+    setVendorName(g.vendorName || "");
+    setProductName(g.productName || "");
+    setQuantityReceived(g.quantityReceived?.toString() || "");
+    setPricePerUnit(g.pricePerUnit?.toString() || "");
     setPurchaseOrderId(g.purchaseOrderId || null);
   };
 
+  // ================================
+  // Delete GRN
+  // ================================
   const deleteGRN = async (id) => {
     if (!window.confirm("Delete this GRN?")) return;
 
@@ -113,6 +130,7 @@ const GRN = () => {
       fetchGRNs();
     } catch (err) {
       console.error("DELETE GRN ERROR 👉", err);
+      alert("Delete failed. Check backend route.");
     }
   };
 
@@ -147,7 +165,7 @@ const GRN = () => {
 
         {purchaseOrderId && (
           <div className="linked-po">
-            Linked PO ID: {purchaseOrderId}
+            Linked PO ID: <b>{purchaseOrderId}</b>
           </div>
         )}
 

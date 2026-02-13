@@ -20,6 +20,7 @@ const Dashboard = () => {
     products: 0,
     customers: 0,
     salesOrders: 0,
+    purchaseOrders: 0,   // ✅ added
     grns: 0,
     invoices: 0,
     totalRevenue: 0,
@@ -30,17 +31,17 @@ const Dashboard = () => {
 
   const fetchDashboard = useCallback(async () => {
     try {
-      const statsRes = await axios.get("http://localhost:5000/api/dashboard/stats", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const revenueRes = await axios.get("http://localhost:5000/api/dashboard/revenue-graph", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const lowStockRes = await axios.get("http://localhost:5000/api/dashboard/low-stock", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const [statsRes, revenueRes, lowStockRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/dashboard", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("http://localhost:5000/api/dashboard/revenue-graph", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("http://localhost:5000/api/dashboard/low-stock", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
       setStats(statsRes.data);
       setSalesData(revenueRes.data);
@@ -60,6 +61,9 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <h2 className="dashboard-title">Dashboard</h2>
 
+      {/* ============================= */}
+      {/* STATS CARDS                   */}
+      {/* ============================= */}
       <div className="dashboard-cards">
         <div className="dashboard-card">
           <h3>Products</h3>
@@ -74,6 +78,11 @@ const Dashboard = () => {
         <div className="dashboard-card">
           <h3>Sales Orders</h3>
           <p>{stats.salesOrders}</p>
+        </div>
+
+        <div className="dashboard-card">
+          <h3>Purchase Orders</h3>
+          <p>{stats.purchaseOrders}</p>
         </div>
 
         <div className="dashboard-card">
@@ -92,6 +101,9 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* ============================= */}
+      {/* CHARTS                        */}
+      {/* ============================= */}
       <div className="dashboard-charts">
         <div className="chart-card">
           <h3>Revenue Graph</h3>
@@ -101,7 +113,12 @@ const Dashboard = () => {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="sales" stroke="#1e3c72" strokeWidth={3} />
+              <Line
+                type="monotone"
+                dataKey="sales"
+                stroke="#1e3c72"
+                strokeWidth={3}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

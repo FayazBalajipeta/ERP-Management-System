@@ -2,23 +2,34 @@ const router = require("express").Router();
 const Product = require("../models/Product");
 const Customer = require("../models/Customer");
 const SalesOrder = require("../models/SalesOrder");
+const PurchaseOrder = require("../models/PurchaseOrder");
 const GRN = require("../models/GRN");
 const Invoice = require("../models/Invoice");
 const { protect } = require("../middleware/authMiddleware");
 
 /* ===========================
-   DASHBOARD STATS
+   DASHBOARD STATS (REALTIME)
 =========================== */
-router.get("/stats", protect, async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
-    const products = await Product.countDocuments();
-    const customers = await Customer.countDocuments();
-    const salesOrders = await SalesOrder.countDocuments();
-    const grns = await GRN.countDocuments();
-    const invoices = await Invoice.countDocuments();
-
-    const totalRevenueAgg = await Invoice.aggregate([
-      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+    const [
+      products,
+      customers,
+      salesOrders,
+      purchaseOrders,
+      grns,
+      invoices,
+      totalRevenueAgg,
+    ] = await Promise.all([
+      Product.countDocuments(),
+      Customer.countDocuments(),
+      SalesOrder.countDocuments(),
+      PurchaseOrder.countDocuments(),
+      GRN.countDocuments(),
+      Invoice.countDocuments(),
+      Invoice.aggregate([
+        { $group: { _id: null, total: { $sum: "$total" } } },
+      ]),
     ]);
 
     const totalRevenue = totalRevenueAgg[0]?.total || 0;
@@ -27,6 +38,7 @@ router.get("/stats", protect, async (req, res) => {
       products,
       customers,
       salesOrders,
+      purchaseOrders,
       grns,
       invoices,
       totalRevenue,
@@ -46,13 +58,16 @@ router.get("/revenue-graph", protect, async (req, res) => {
       {
         $group: {
           _id: { $month: "$createdAt" },
-          revenue: { $sum: "$totalAmount" },
+          revenue: { $sum: "$total" }, // FIXED FIELD
         },
       },
       { $sort: { _id: 1 } },
     ]);
 
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
 
     const formatted = data.map((item) => ({
       month: months[item._id - 1],
@@ -71,7 +86,8 @@ router.get("/revenue-graph", protect, async (req, res) => {
 =========================== */
 router.get("/low-stock", protect, async (req, res) => {
   try {
-    const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).select("title stock");
+    const lowStockProducts = await Product.find({ stock: { $lte: 5 } })
+      .select("title stock");
 
     res.json(lowStockProducts);
   } catch (err) {

@@ -17,6 +17,11 @@ const GRN = () => {
 
   const token = localStorage.getItem("token");
 
+  // ✅ Get user role
+  const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role;
+  const isAdmin = role === "Admin";
+
   // ================================
   // Prefill when coming from PO page
   // ================================
@@ -85,20 +90,11 @@ const GRN = () => {
         await axios.post("http://localhost:5000/api/grn", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        // 🔥 Update Purchase Order status after GRN created
-        if (purchaseOrderId) {
-          await axios.put(
-            `http://localhost:5000/api/purchase-orders/${purchaseOrderId}`,
-            { status: "Received" },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        }
       }
 
       resetForm();
       fetchGRNs();
-      navigate("/grn", { replace: true }); // clear navigation state
+      navigate("/grn", { replace: true });
     } catch (err) {
       console.error("GRN ERROR 👉", err);
       alert("GRN failed");
@@ -118,7 +114,7 @@ const GRN = () => {
   };
 
   // ================================
-  // Delete GRN
+  // Delete GRN (Admin only)
   // ================================
   const deleteGRN = async (id) => {
     if (!window.confirm("Delete this GRN?")) return;
@@ -130,7 +126,7 @@ const GRN = () => {
       fetchGRNs();
     } catch (err) {
       console.error("DELETE GRN ERROR 👉", err);
-      alert("Delete failed. Check backend route.");
+      alert("You are not allowed to delete GRNs");
     }
   };
 
@@ -202,23 +198,21 @@ const GRN = () => {
                 <td>{g.quantityReceived}</td>
                 <td>₹{g.pricePerUnit}</td>
                 <td>₹{g.totalAmount ?? g.quantityReceived * g.pricePerUnit}</td>
-                <td>
-                  {g.purchaseOrderId ? (
-                    <span className="po-link">Linked</span>
-                  ) : (
-                    <span className="po-unlinked">Manual</span>
-                  )}
-                </td>
+                <td>{g.purchaseOrderId ? "Linked" : "Manual"}</td>
                 <td>
                   <button className="edit-btn" onClick={() => editGRN(g)}>
                     Edit
                   </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteGRN(g._id)}
-                  >
-                    Delete
-                  </button>
+
+                  {/* ✅ Delete only for Admin */}
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteGRN(g._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))

@@ -13,6 +13,11 @@ const Products = () => {
 
   const token = localStorage.getItem("token");
 
+  // ✅ Get user role
+  const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role;
+  const isAdmin = role === "Admin";
+
   // ================= FETCH PRODUCTS =================
   const fetchProducts = useCallback(async () => {
     if (!token) return;
@@ -55,25 +60,19 @@ const Products = () => {
       setLoading(true);
 
       if (editId) {
-        // UPDATE
         await axios.put(
           `http://localhost:5000/api/products/${editId}`,
           payload,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
       } else {
-        // CREATE
         await axios.post(
           "http://localhost:5000/api/products",
           payload,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
       }
@@ -95,14 +94,12 @@ const Products = () => {
     try {
       setLoading(true);
       await axios.delete(`http://localhost:5000/api/products/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchProducts();
     } catch (err) {
       console.error("Delete product error:", err.response?.data || err.message);
-      alert("Failed to delete product");
+      alert("You are not allowed to delete products");
     } finally {
       setLoading(false);
     }
@@ -200,12 +197,16 @@ const Products = () => {
                   >
                     Edit
                   </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteProduct(p._id)}
-                  >
-                    Delete
-                  </button>
+
+                  {/* ✅ Delete only for Admin */}
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteProduct(p._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

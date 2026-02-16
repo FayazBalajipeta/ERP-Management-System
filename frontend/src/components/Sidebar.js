@@ -5,6 +5,17 @@ function Sidebar({ open, toggle }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const userStr = localStorage.getItem("user");
+  let userRole = "";
+
+  try {
+    userRole = JSON.parse(userStr)?.role?.toLowerCase();
+  } catch {
+    userRole = "";
+  }
+
+  const canAccess = (roles) => roles.map(r => r.toLowerCase()).includes(userRole);
+
   return (
     <>
       {/* Toggle Button */}
@@ -16,35 +27,56 @@ function Sidebar({ open, toggle }) {
         <div className="sidebar-header">SmartERP</div>
 
         <ul className="sidebar-menu">
-          <li className={location.pathname === "/dashboard" ? "active" : ""} onClick={() => navigate("/dashboard")}>
-            📊 Dashboard
-          </li>
 
-          <li className={location.pathname === "/products" ? "active" : ""} onClick={() => navigate("/products")}>
-            📦 Products
-          </li>
+          {/* Dashboard → Admin, User, Sales */}
+          {canAccess(["Admin", "User", "Sales"]) && (
+            <li className={location.pathname === "/dashboard" ? "active" : ""} onClick={() => navigate("/dashboard")}>
+              📊 Dashboard
+            </li>
+          )}
 
-          <li className={location.pathname === "/customers" ? "active" : ""} onClick={() => navigate("/customers")}>
-            👥 Customers
-          </li>
+          {/* Products → Admin, User */}
+          {canAccess(["Admin", "User"]) && (
+            <li className={location.pathname === "/products" ? "active" : ""} onClick={() => navigate("/products")}>
+              📦 Products
+            </li>
+          )}
 
-          <li className={location.pathname === "/sales-orders" ? "active" : ""} onClick={() => navigate("/sales-orders")}>
-            🧾 Sales Orders
-          </li>
+          {/* Customers → Admin, Sales */}
+          {canAccess(["Admin", "Sales"]) && (
+            <li className={location.pathname === "/customers" ? "active" : ""} onClick={() => navigate("/customers")}>
+              👥 Customers
+            </li>
+          )}
 
-<li className={location.pathname === "/purchase-orders" ? "active" : ""} onClick={() => navigate("/purchase-orders")}>
-            🛒 Purchase Orders
-          </li>
+          {/* Sales Orders → Admin, Sales */}
+          {canAccess(["Admin", "Sales"]) && (
+            <li className={location.pathname === "/sales-orders" ? "active" : ""} onClick={() => navigate("/sales-orders")}>
+              🧾 Sales Orders
+            </li>
+          )}
 
-          <li className={location.pathname === "/grn" ? "active" : ""} onClick={() => navigate("/grn")}>
-            🚚 GRN
-          </li>
+          {/* Purchase Orders → Admin, User */}
+          {canAccess(["Admin", "User"]) && (
+            <li className={location.pathname === "/purchase-orders" ? "active" : ""} onClick={() => navigate("/purchase-orders")}>
+              🛒 Purchase Orders
+            </li>
+          )}
 
-          <li className={location.pathname === "/invoice" ? "active" : ""} onClick={() => navigate("/invoice")}>
-            💳 Invoice
-          </li>
+          {/* GRN → Admin, User */}
+          {canAccess(["Admin", "User"]) && (
+            <li className={location.pathname === "/grn" ? "active" : ""} onClick={() => navigate("/grn")}>
+              🚚 GRN
+            </li>
+          )}
 
-          
+          {/* Invoice → Admin, Sales */}
+          {canAccess(["Admin", "Sales"]) && (
+            <li className={location.pathname === "/invoice" ? "active" : ""} onClick={() => navigate("/invoice")}>
+              💳 Invoice
+            </li>
+          )}
+
         </ul>
       </div>
     </>

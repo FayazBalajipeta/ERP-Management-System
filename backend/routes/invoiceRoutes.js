@@ -3,11 +3,26 @@ const Invoice = require("../models/Invoice");
 const SalesOrder = require("../models/SalesOrder"); // 🔗 Link to Sales Orders
 const PDFDocument = require("pdfkit");
 const { protect } = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
+
+/*
+  Role Access:
+  - READ    → Admin, Sales, User
+  - CREATE  → Admin, Sales
+  - UPDATE  → Admin, Sales
+  - DELETE  → Admin only
+  - PDF     → Admin, Sales, User
+*/
+
+// ==============================
+// 🔐 PROTECT ALL ROUTES
+// ==============================
+router.use(protect);
 
 // ==============================
 // GET all invoices (with Sales Order link)
 // ==============================
-router.get("/", protect, async (req, res) => {
+router.get("/", authorizeRoles("Admin", "Sales", "User"), async (req, res) => {
   try {
     const invoices = await Invoice.find()
       .populate("salesOrderId") // 🔗 populate linked sales order
@@ -23,7 +38,7 @@ router.get("/", protect, async (req, res) => {
 // ==============================
 // CREATE invoice (link to sales order optional)
 // ==============================
-router.post("/", protect, async (req, res) => {
+router.post("/", authorizeRoles("Admin", "Sales"), async (req, res) => {
   try {
     const { customerName, productName, quantity, price, salesOrderId } =
       req.body;
@@ -43,7 +58,7 @@ router.post("/", protect, async (req, res) => {
       salesOrderId: salesOrderId || null, // 🔗 optional link
     });
 
-    // 🔥 Auto mark Sales Order as Invoiced (optional but pro)
+    // 🔥 Auto mark Sales Order as Invoiced
     if (salesOrderId) {
       await SalesOrder.findByIdAndUpdate(salesOrderId, {
         status: "Invoiced",
@@ -60,7 +75,7 @@ router.post("/", protect, async (req, res) => {
 // ==============================
 // UPDATE invoice (including sales order link)
 // ==============================
-router.put("/:id", protect, async (req, res) => {
+router.put("/:id", authorizeRoles("Admin", "Sales"), async (req, res) => {
   try {
     const { customerName, productName, quantity, price, salesOrderId } =
       req.body;
@@ -88,11 +103,16 @@ router.put("/:id", protect, async (req, res) => {
 });
 
 // ==============================
-// DELETE invoice
+// DELETE invoice (Admin only)
 // ==============================
-router.delete("/:id", protect, async (req, res) => {
+router.delete("/:id", authorizeRoles("Admin"), async (req, res) => {
   try {
-    await Invoice.findByIdAndDelete(req.params.id);
+    const invoice = await Invoice.findByIdAndDelete(req.params.id);
+
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
     res.json({ message: "Invoice deleted" });
   } catch (err) {
     console.error("DELETE INVOICE ERROR:", err);
@@ -101,9 +121,9 @@ router.delete("/:id", protect, async (req, res) => {
 });
 
 // ==============================
-// DOWNLOAD PDF
+// DOWNLOAD PDF (All roles)
 // ==============================
-router.get("/:id/pdf", protect, async (req, res) => {
+router.get("/:id/pdf", authorizeRoles("Admin", "Sales", "User"), async (req, res) => {
   try {
     const invoice = await Invoice.findById(req.params.id).populate(
       "salesOrderId"
@@ -123,6 +143,7 @@ router.get("/:id/pdf", protect, async (req, res) => {
 
     doc.pipe(res);
 
+    // Header
     doc.fontSize(24).text("SmartERP Invoice", { align: "center" });
     doc.moveDown();
 

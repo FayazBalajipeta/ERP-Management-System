@@ -8,11 +8,23 @@ const {
   deleteProduct,
 } = require("../controllers/productController");
 
-const { protect, allowRoles } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
-router.get("/", protect, getProducts);
-router.post("/", protect, allowRoles("Admin", "Inventory"), createProduct);
-router.put("/:id", protect, allowRoles("Admin", "Inventory"), updateProduct);
-router.delete("/:id", protect, allowRoles("Admin"), deleteProduct);
+/*
+  Role Access:
+  - View Products  → Admin, User, Sales
+  - Create Product → Admin, User
+  - Update Product → Admin, User
+  - Delete Product → Admin only
+*/
+
+router.get("/", protect, authorizeRoles("Admin", "User", "Sales"), getProducts);
+
+router.post("/", protect, authorizeRoles("Admin", "User"), createProduct);
+
+router.put("/:id", protect, authorizeRoles("Admin", "User"), updateProduct);
+
+router.delete("/:id", protect, authorizeRoles("Admin"), deleteProduct);
 
 module.exports = router;

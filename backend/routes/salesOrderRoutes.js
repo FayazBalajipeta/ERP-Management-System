@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect, allowRoles } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
 const {
   createSalesOrder,
@@ -17,16 +18,24 @@ const {
 // 🔐 All routes require login
 router.use(protect);
 
-// CREATE → Admin + Sales
-router.post("/", allowRoles("Admin", "Sales"), createSalesOrder);
+/*
+  Role Access:
+  - CREATE → Admin, Sales
+  - READ   → Admin, Sales, User
+  - UPDATE → Admin, Sales
+  - DELETE → Admin only
+*/
 
-// READ → Admin + Sales + Inventory
-router.get("/", allowRoles("Admin", "Sales", "Inventory"), getSalesOrders);
+// CREATE
+router.post("/", authorizeRoles("Admin", "Sales"), createSalesOrder);
 
-// UPDATE → Admin + Sales
-router.put("/:id", allowRoles("Admin", "Sales"), updateSalesOrder);
+// READ
+router.get("/", authorizeRoles("Admin", "Sales", "User"), getSalesOrders);
 
-// DELETE → Admin only
-router.delete("/:id", allowRoles("Admin"), deleteSalesOrder);
+// UPDATE
+router.put("/:id", authorizeRoles("Admin", "Sales"), updateSalesOrder);
+
+// DELETE
+router.delete("/:id", authorizeRoles("Admin"), deleteSalesOrder);
 
 module.exports = router;

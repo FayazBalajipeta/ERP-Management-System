@@ -36,19 +36,93 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public */}
+        {/* ===================== */}
+        {/* Public Routes         */}
+        {/* ===================== */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Protected */}
-        <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-        <Route path="/products" element={<ProtectedRoute><AppLayout><Products /></AppLayout></ProtectedRoute>} />
-        <Route path="/sales-orders" element={<ProtectedRoute><AppLayout><SalesOrders /></AppLayout></ProtectedRoute>} />
-        <Route path="/customers" element={<ProtectedRoute><AppLayout><Customers /></AppLayout></ProtectedRoute>} />
-        <Route path="/grn" element={<ProtectedRoute><AppLayout><GRN /></AppLayout></ProtectedRoute>} />
-        <Route path="/invoice" element={<ProtectedRoute><AppLayout><Invoice /></AppLayout></ProtectedRoute>} />
-        <Route path="/purchase-orders" element={<ProtectedRoute><AppLayout><PurchaseOrders /></AppLayout></ProtectedRoute>} />
+        {/* ===================== */}
+        {/* Protected Routes      */}
+        {/* ===================== */}
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute roles={["Admin", "User", "Sales"]}>
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute roles={["Admin", "User"]}>
+              <AppLayout>
+                <Products />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute roles={["Admin", "Sales"]}>
+              <AppLayout>
+                <Customers />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/sales-orders"
+          element={
+            <ProtectedRoute roles={["Admin", "Sales"]}>
+              <AppLayout>
+                <SalesOrders />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/purchase-orders"
+          element={
+            <ProtectedRoute roles={["Admin", "User"]}>
+              <AppLayout>
+                <PurchaseOrders />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/grn"
+          element={
+            <ProtectedRoute roles={["Admin", "User"]}>
+              <AppLayout>
+                <GRN />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/invoice"
+          element={
+            <ProtectedRoute roles={["Admin", "Sales"]}>
+              <AppLayout>
+                <Invoice />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

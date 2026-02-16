@@ -16,6 +16,11 @@ function Invoice() {
   });
 
   const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user?.role; // Admin | Sales | User
+
+  const isAdmin = role === "Admin";
+  const isSales = role === "Sales";
 
   // =========================
   // Fetch Invoices
@@ -74,6 +79,12 @@ function Invoice() {
       salesOrderId: salesOrderId || null,
     };
 
+    // ❌ Sales cannot update
+    if (editId && isSales) {
+      alert("Sales role cannot edit invoices");
+      return;
+    }
+
     if (editId) {
       await axios.put(
         `http://localhost:5000/api/invoice/${editId}`,
@@ -86,6 +97,11 @@ function Invoice() {
       });
     }
 
+    resetForm();
+    fetchInvoices();
+  };
+
+  const resetForm = () => {
     setForm({
       customerName: "",
       productName: "",
@@ -94,13 +110,14 @@ function Invoice() {
     });
     setSalesOrderId("");
     setEditId(null);
-    fetchInvoices();
   };
 
   // =========================
-  // Edit
+  // Edit (Admin only)
   // =========================
   const handleEdit = (invoice) => {
+    if (!isAdmin) return;
+
     setEditId(invoice._id);
     setSalesOrderId(invoice.salesOrderId?._id || "");
     setForm({
@@ -112,10 +129,16 @@ function Invoice() {
   };
 
   // =========================
-  // Delete
+  // Delete (Admin only)
   // =========================
   const handleDelete = async (id) => {
+    if (!isAdmin) {
+      alert("Only Admin can delete invoices");
+      return;
+    }
+
     if (!window.confirm("Delete this invoice?")) return;
+
     await axios.delete(`http://localhost:5000/api/invoice/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -143,57 +166,59 @@ function Invoice() {
       <h2 className="page-title">Invoice</h2>
 
       {/* ================= FORM ================= */}
-      <div className="invoice-form professional-card">
-        <select value={salesOrderId} onChange={handleSalesOrderSelect}>
-          <option value="">Link to Sales Order (optional)</option>
-          {salesOrders.map((so) => (
-            <option key={so._id} value={so._id}>
-              {so.customerName} - {so.productName}
-            </option>
-          ))}
-        </select>
+      {(isAdmin || isSales) && (
+        <div className="invoice-form professional-card">
+          <select value={salesOrderId} onChange={handleSalesOrderSelect}>
+            <option value="">Link to Sales Order (optional)</option>
+            {salesOrders.map((so) => (
+              <option key={so._id} value={so._id}>
+                {so.customerName} - {so.productName}
+              </option>
+            ))}
+          </select>
 
-        <input
-          placeholder="Customer Name"
-          value={form.customerName}
-          disabled={!!salesOrderId}
-          onChange={(e) =>
-            setForm({ ...form, customerName: e.target.value })
-          }
-        />
+          <input
+            placeholder="Customer Name"
+            value={form.customerName}
+            disabled={!!salesOrderId}
+            onChange={(e) =>
+              setForm({ ...form, customerName: e.target.value })
+            }
+          />
 
-        <input
-          placeholder="Product Name"
-          value={form.productName}
-          disabled={!!salesOrderId}
-          onChange={(e) =>
-            setForm({ ...form, productName: e.target.value })
-          }
-        />
+          <input
+            placeholder="Product Name"
+            value={form.productName}
+            disabled={!!salesOrderId}
+            onChange={(e) =>
+              setForm({ ...form, productName: e.target.value })
+            }
+          />
 
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={form.quantity}
-          disabled={!!salesOrderId}
-          onChange={(e) =>
-            setForm({ ...form, quantity: e.target.value })
-          }
-        />
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={form.quantity}
+            disabled={!!salesOrderId}
+            onChange={(e) =>
+              setForm({ ...form, quantity: e.target.value })
+            }
+          />
 
-        <input
-          type="number"
-          placeholder="Price Per Unit"
-          value={form.price}
-          onChange={(e) =>
-            setForm({ ...form, price: e.target.value })
-          }
-        />
+          <input
+            type="number"
+            placeholder="Price Per Unit"
+            value={form.price}
+            onChange={(e) =>
+              setForm({ ...form, price: e.target.value })
+            }
+          />
 
-        <button className="invoice-create-btn" onClick={handleSubmit}>
-          {editId ? "Update Invoice" : "Create Invoice"}
-        </button>
-      </div>
+          <button className="invoice-create-btn" onClick={handleSubmit}>
+            {editId ? "Update Invoice" : "Create Invoice"}
+          </button>
+        </div>
+      )}
 
       {/* ================= TABLE ================= */}
       <table className="invoice-table professional-table">
@@ -205,7 +230,7 @@ function Invoice() {
             <th>Total</th>
             <th>Linked SO</th>
             <th>PDF</th>
-            <th>Actions</th>
+            {isAdmin && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -226,10 +251,13 @@ function Invoice() {
                     Download
                   </button>
                 </td>
-                <td>
-                  <button className="edit-btn" onClick={() => handleEdit(inv)}>Edit</button>
-                  <button className="delete-btn" onClick={() => handleDelete(inv._id)}>Delete</button>
-                </td>
+
+                {isAdmin && (
+                  <td>
+                    <button className="edit-btn" onClick={() => handleEdit(inv)}>Edit</button>
+                    <button className="delete-btn" onClick={() => handleDelete(inv._id)}>Delete</button>
+                  </td>
+                )}
               </tr>
             ))
           )}

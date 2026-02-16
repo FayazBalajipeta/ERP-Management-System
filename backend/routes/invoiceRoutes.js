@@ -9,7 +9,7 @@ const authorizeRoles = require("../middleware/roleMiddleware");
   Role Access:
   - READ    → Admin, Sales, User
   - CREATE  → Admin, Sales
-  - UPDATE  → Admin, Sales
+  - UPDATE  → Admin only ❌ Sales blocked
   - DELETE  → Admin only
   - PDF     → Admin, Sales, User
 */
@@ -73,9 +73,9 @@ router.post("/", authorizeRoles("Admin", "Sales"), async (req, res) => {
 });
 
 // ==============================
-// UPDATE invoice (including sales order link)
+// UPDATE invoice (Admin only ❌ Sales blocked)
 // ==============================
-router.put("/:id", authorizeRoles("Admin", "Sales"), async (req, res) => {
+router.put("/:id", authorizeRoles("Admin"), async (req, res) => {
   try {
     const { customerName, productName, quantity, price, salesOrderId } =
       req.body;
@@ -94,6 +94,10 @@ router.put("/:id", authorizeRoles("Admin", "Sales"), async (req, res) => {
       },
       { new: true }
     );
+
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
 
     res.json(invoice);
   } catch (err) {
@@ -125,9 +129,7 @@ router.delete("/:id", authorizeRoles("Admin"), async (req, res) => {
 // ==============================
 router.get("/:id/pdf", authorizeRoles("Admin", "Sales", "User"), async (req, res) => {
   try {
-    const invoice = await Invoice.findById(req.params.id).populate(
-      "salesOrderId"
-    );
+    const invoice = await Invoice.findById(req.params.id).populate("salesOrderId");
 
     if (!invoice) {
       return res.status(404).json({ message: "Invoice not found" });
@@ -163,9 +165,7 @@ router.get("/:id/pdf", authorizeRoles("Admin", "Sales", "User"), async (req, res
 
     if (invoice.salesOrderId) {
       doc.moveDown();
-      doc
-        .fontSize(12)
-        .text(`Linked Sales Order ID: ${invoice.salesOrderId._id}`);
+      doc.fontSize(12).text(`Linked Sales Order ID: ${invoice.salesOrderId._id}`);
     }
 
     doc.moveDown(2);

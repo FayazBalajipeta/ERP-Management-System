@@ -12,19 +12,34 @@ const Customers = () => {
 
   const token = localStorage.getItem("token");
 
+  // 🔐 Get role from localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user?.role;
+
+  const isAdmin = role === "Admin";
+  const isSales = role === "Sales";
+
+  // =========================
   // Fetch customers
+  // =========================
   const fetchCustomers = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/customers", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setCustomers(res.data);
+    try {
+      const res = await axios.get("http://localhost:5000/api/customers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCustomers(res.data);
+    } catch (err) {
+      console.error("FETCH CUSTOMERS ERROR:", err);
+    }
   }, [token]);
 
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
 
+  // =========================
   // Add / Update customer
+  // =========================
   const saveCustomer = async () => {
     if (!name || !phone) {
       alert("Name and phone are required");
@@ -33,24 +48,30 @@ const Customers = () => {
 
     const payload = { name, email, phone, address };
 
-    if (editId) {
-      await axios.put(
-        `http://localhost:5000/api/customers/${editId}`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } else {
-      await axios.post(
-        "http://localhost:5000/api/customers",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    }
+    try {
+      if (editId) {
+        await axios.put(
+          `http://localhost:5000/api/customers/${editId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        await axios.post("http://localhost:5000/api/customers", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
-    clearForm();
-    fetchCustomers();
+      clearForm();
+      fetchCustomers();
+    } catch (err) {
+      console.error("SAVE CUSTOMER ERROR:", err);
+      alert("You are not allowed to perform this action");
+    }
   };
 
+  // =========================
+  // Edit
+  // =========================
   const editCustomer = (c) => {
     setEditId(c._id);
     setName(c.name);
@@ -59,14 +80,27 @@ const Customers = () => {
     setAddress(c.address);
   };
 
+  // =========================
+  // Delete (Admin only)
+  // =========================
   const deleteCustomer = async (id) => {
+    if (!isAdmin) {
+      alert("Only Admin can delete customers");
+      return;
+    }
+
     if (!window.confirm("Delete customer?")) return;
 
-    await axios.delete(`http://localhost:5000/api/customers/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      await axios.delete(`http://localhost:5000/api/customers/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    fetchCustomers();
+      fetchCustomers();
+    } catch (err) {
+      console.error("DELETE CUSTOMER ERROR:", err);
+      alert("Delete failed");
+    }
   };
 
   const clearForm = () => {
@@ -81,41 +115,43 @@ const Customers = () => {
     <div className="customers-container">
       <h2>Customers</h2>
 
-      {/* FORM */}
-      <div className="customer-form">
-        <input
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          placeholder="Phone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        <input
-          placeholder="Address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-        />
+      {/* ================= FORM ================= */}
+      {(isAdmin || isSales) && (
+        <div className="customer-form">
+          <input
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            placeholder="Phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <input
+            placeholder="Address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
 
-        <button onClick={saveCustomer}>
-          {editId ? "Update" : "Add"}
-        </button>
-
-        {editId && (
-          <button className="cancel-btn" onClick={clearForm}>
-            Cancel
+          <button onClick={saveCustomer}>
+            {editId ? "Update" : "Add"}
           </button>
-        )}
-      </div>
 
-      {/* TABLE */}
+          {editId && (
+            <button className="cancel-btn" onClick={clearForm}>
+              Cancel
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ================= TABLE ================= */}
       <table className="customer-table">
         <thead>
           <tr>
@@ -135,19 +171,23 @@ const Customers = () => {
               <td>{c.phone}</td>
               <td>{c.address}</td>
               <td>
-                <button
-                  className="action-btn edit-btn"
-                  onClick={() => editCustomer(c)}
-                >
-                  Edit
-                </button>
+                {(isAdmin || isSales) && (
+                  <button
+                    className="action-btn edit-btn"
+                    onClick={() => editCustomer(c)}
+                  >
+                    Edit
+                  </button>
+                )}
 
-                <button
-                  className="action-btn delete-btn"
-                  onClick={() => deleteCustomer(c._id)}
-                >
-                  Delete
-                </button>
+                {isAdmin && (
+                  <button
+                    className="action-btn delete-btn"
+                    onClick={() => deleteCustomer(c._id)}
+                  >
+                    Delete
+                  </button>
+                )}
               </td>
             </tr>
           ))}

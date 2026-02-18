@@ -8,16 +8,14 @@ const app = express();
 // =============================
 // Middlewares
 // =============================
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://erp-management-system-three.vercel.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://erp-management-system.vercel.app",
+    "https://erp-management-system-eael.vercel.app"  // ✅ ADD THIS
+  ],
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -25,7 +23,7 @@ app.use(express.json());
 // MongoDB Connection
 // =============================
 mongoose
-  .connect(process.env.MONGO_URI)   // ✅ removed old options
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => {
     console.error("❌ MongoDB Connection Error:", err.message);
@@ -48,7 +46,7 @@ app.use("/api/purchase-orders", require("./routes/purchaseOrderRoutes"));
 // Health Check
 // =============================
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "🚀 SmartERP Backend is running!" });
+  res.status(200).send("🚀 SmartERP Backend is running!");
 });
 
 // =============================

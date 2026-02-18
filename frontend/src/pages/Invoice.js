@@ -26,7 +26,7 @@ function Invoice() {
   // Fetch Invoices
   // =========================
   const fetchInvoices = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/invoice", {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/invoice`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setInvoices(res.data);
@@ -36,7 +36,7 @@ function Invoice() {
   // Fetch Sales Orders
   // =========================
   const fetchSalesOrders = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/sales-orders", {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/sales-orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setSalesOrders(res.data);
@@ -87,12 +87,12 @@ function Invoice() {
 
     if (editId) {
       await axios.put(
-        `http://localhost:5000/api/invoice/${editId}`,
+        `${process.env.REACT_APP_API_URL}/${editId}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } else {
-      await axios.post("http://localhost:5000/api/invoice", payload, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/invoice`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
     }
@@ -139,7 +139,7 @@ function Invoice() {
 
     if (!window.confirm("Delete this invoice?")) return;
 
-    await axios.delete(`http://localhost:5000/api/invoice/${id}`, {
+    await axios.delete(`${process.env.REACT_APP_API_URL}/api/invoice/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     fetchInvoices();
@@ -149,7 +149,7 @@ function Invoice() {
   // PDF Download
   // =========================
   const downloadPDF = async (id) => {
-    const res = await fetch(`http://localhost:5000/api/invoice/${id}/pdf`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/invoice/${id}/pdf`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

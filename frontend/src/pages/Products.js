@@ -24,7 +24,7 @@ const Products = () => {
 
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/products", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/products`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -61,7 +61,7 @@ const Products = () => {
 
       if (editId) {
         await axios.put(
-          `http://localhost:5000/api/products/${editId}`,
+          `${process.env.REACT_APP_API_URL}/api/products/${editId}`,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -69,7 +69,7 @@ const Products = () => {
         );
       } else {
         await axios.post(
-          "http://localhost:5000/api/products",
+          `${process.env.REACT_APP_API_URL}/api/products`,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -93,7 +93,7 @@ const Products = () => {
 
     try {
       setLoading(true);
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchProducts();

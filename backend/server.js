@@ -8,12 +8,15 @@ const app = express();
 // =============================
 // Middlewares
 // =============================
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "*", // Allow Vercel URL in prod
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://erp-management-system.vercel.app"
+  ],
+  credentials: true
+}));
+
+
 app.use(express.json());
 
 // =============================

@@ -17,7 +17,7 @@ const SalesOrders = () => {
   /* Fetch Orders                  */
   /* ============================= */
   const fetchOrders = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/sales-orders", {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/sales-orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setOrders(res.data);
@@ -46,14 +46,14 @@ const SalesOrders = () => {
     if (editId) {
       // UPDATE
       await axios.put(
-        `http://localhost:5000/api/sales-orders/${editId}`,
+        `${process.env.REACT_APP_API_URL}/api/sales-orders/${editId}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } else {
       // CREATE
       await axios.post(
-        "http://localhost:5000/api/sales-orders",
+        `${process.env.REACT_APP_API_URL}/api/sales-orders`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -80,7 +80,7 @@ const SalesOrders = () => {
   const deleteOrder = async (id) => {
     if (!window.confirm("Delete order?")) return;
 
-    await axios.delete(`http://localhost:5000/api/sales-orders/${id}`, {
+    await axios.delete(`${process.env.REACT_APP_API_URL}/api/sales-orders/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

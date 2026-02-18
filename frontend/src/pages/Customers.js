@@ -24,7 +24,7 @@ const Customers = () => {
   // =========================
   const fetchCustomers = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/customers", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCustomers(res.data);
@@ -51,12 +51,12 @@ const Customers = () => {
     try {
       if (editId) {
         await axios.put(
-          `http://localhost:5000/api/customers/${editId}`,
+          `${process.env.REACT_APP_API_URL}/api/customers/${editId}`,
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        await axios.post("http://localhost:5000/api/customers", payload, {
+        await axios.post(`${process.env.REACT_APP_API_URL}/api/customers`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -92,7 +92,7 @@ const Customers = () => {
     if (!window.confirm("Delete customer?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/customers/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/customers/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -25,7 +25,7 @@ const handleRegister = async (e) => {
   }
 
   try {
-    await axios.post("http://localhost:5000/api/auth/register", {
+    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,

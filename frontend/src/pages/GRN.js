@@ -39,7 +39,7 @@ const GRN = () => {
   // ================================
   const fetchGRNs = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/grn", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/grn`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setGrns(res.data);
@@ -83,11 +83,11 @@ const GRN = () => {
       };
 
       if (editId) {
-        await axios.put(`http://localhost:5000/api/grn/${editId}`, payload, {
+        await axios.put(`${process.env.REACT_APP_API_URL}/api/grn/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post("http://localhost:5000/api/grn", payload, {
+        await axios.post(`${process.env.REACT_APP_API_URL}/api/grn`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -120,7 +120,7 @@ const GRN = () => {
     if (!window.confirm("Delete this GRN?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/grn/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/grn/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchGRNs();

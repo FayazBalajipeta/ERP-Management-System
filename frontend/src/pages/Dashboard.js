@@ -32,13 +32,13 @@ const Dashboard = () => {
   const fetchDashboard = useCallback(async () => {
     try {
       const [statsRes, revenueRes, lowStockRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/dashboard", {
+        axios.get(`${process.env.REACT_APP_API_URL}/api/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:5000/api/dashboard/revenue-graph", {
+        axios.get(`${process.env.REACT_APP_API_URL}/api/dashboard/revenue-graph`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:5000/api/dashboard/low-stock", {
+        axios.get(`${process.env.REACT_APP_API_URL}/api/dashboard/low-stock`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

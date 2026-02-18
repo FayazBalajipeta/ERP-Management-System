@@ -16,7 +16,7 @@ function PurchaseOrders() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/purchase-orders", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/purchase-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data);
@@ -38,13 +38,13 @@ function PurchaseOrders() {
     try {
       if (editId) {
         await axios.put(
-          `http://localhost:5000/api/purchase-orders/${editId}`,
+          `${process.env.REACT_APP_API_URL}/api/purchase-orders/${editId}`,
           { supplierName, productName, quantity, status },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
-          "http://localhost:5000/api/purchase-orders",
+          `${process.env.REACT_APP_API_URL}/api/purchase-orders`,
           { supplierName, productName, quantity, status },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -73,7 +73,7 @@ function PurchaseOrders() {
     if (!window.confirm("Delete this Purchase Order?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/purchase-orders/${id}`, {
+      await axios.delete(`h${process.env.REACT_APP_API_URL}/api/purchase-orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();

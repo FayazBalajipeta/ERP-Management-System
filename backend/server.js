@@ -6,21 +6,36 @@ require("dotenv").config();
 const app = express();
 
 // =============================
-// Middlewares
+// ✅ CORS (Allow Vercel + Localhost)
 // =============================
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://erp-management-system.vercel.app",
+  "https://erp-management-system-eael.vercel.app",
+  "https://erp-management-system-three.vercel.app"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://erp-management-system.vercel.app",
-    "https://erp-management-system-eael.vercel.app"  // ✅ ADD THIS
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // allow requests with no origin (like Postman, Render internal calls)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
 
 // =============================
-// MongoDB Connection
+// ✅ MongoDB Connection
 // =============================
 mongoose
   .connect(process.env.MONGO_URI)
@@ -60,7 +75,7 @@ app.use((req, res) => {
 // Global Error Handler
 // =============================
 app.use((err, req, res, next) => {
-  console.error("🔥 GLOBAL ERROR:", err.stack);
+  console.error("🔥 GLOBAL ERROR:", err.message);
   res.status(err.status || 500).json({
     message: err.message || "Something went wrong!",
   });
@@ -69,7 +84,7 @@ app.use((err, req, res, next) => {
 // =============================
 // Server
 // =============================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000; // Render uses 10000
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

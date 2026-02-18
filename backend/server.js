@@ -8,7 +8,12 @@ const app = express();
 // =============================
 // Middlewares
 // =============================
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*", // Allow Vercel URL in prod
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // =============================
@@ -38,7 +43,14 @@ app.use("/api/purchase-orders", require("./routes/purchaseOrderRoutes"));
 // Health Check
 // =============================
 app.get("/", (req, res) => {
-  res.send("🚀 ERP Backend Running Successfully");
+  res.status(200).send("🚀 SmartERP Backend is running!");
+});
+
+// =============================
+// 404 Handler
+// =============================
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
 
 // =============================
@@ -46,7 +58,9 @@ app.get("/", (req, res) => {
 // =============================
 app.use((err, req, res, next) => {
   console.error("🔥 GLOBAL ERROR:", err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
+  res.status(err.status || 500).json({
+    message: err.message || "Something went wrong!",
+  });
 });
 
 // =============================

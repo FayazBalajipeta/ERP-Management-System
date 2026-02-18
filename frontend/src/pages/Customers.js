@@ -2,6 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Customers.css";
 
+// ✅ API base URL (works for both local + production)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
   const [name, setName] = useState("");
@@ -24,12 +28,13 @@ const Customers = () => {
   // =========================
   const fetchCustomers = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/customers`, {
+      const res = await axios.get(`${API_BASE_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCustomers(res.data);
     } catch (err) {
-      console.error("FETCH CUSTOMERS ERROR:", err);
+      console.error("FETCH CUSTOMERS ERROR:", err.response?.data || err.message);
+      alert("Failed to load customers");
     }
   }, [token]);
 
@@ -51,12 +56,12 @@ const Customers = () => {
     try {
       if (editId) {
         await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/customers/${editId}`,
+          `${API_BASE_URL}/api/customers/${editId}`,
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        await axios.post(`${process.env.REACT_APP_API_URL}/api/customers`, payload, {
+        await axios.post(`${API_BASE_URL}/api/customers`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -64,8 +69,13 @@ const Customers = () => {
       clearForm();
       fetchCustomers();
     } catch (err) {
-      console.error("SAVE CUSTOMER ERROR:", err);
-      alert("You are not allowed to perform this action");
+      console.error("SAVE CUSTOMER ERROR:", err.response?.data || err.message);
+
+      if (err.response?.status === 403) {
+        alert("❌ You don’t have permission to do this");
+      } else {
+        alert("❌ Failed to save customer");
+      }
     }
   };
 
@@ -74,10 +84,10 @@ const Customers = () => {
   // =========================
   const editCustomer = (c) => {
     setEditId(c._id);
-    setName(c.name);
-    setEmail(c.email);
-    setPhone(c.phone);
-    setAddress(c.address);
+    setName(c.name || "");
+    setEmail(c.email || "");
+    setPhone(c.phone || "");
+    setAddress(c.address || "");
   };
 
   // =========================
@@ -85,21 +95,20 @@ const Customers = () => {
   // =========================
   const deleteCustomer = async (id) => {
     if (!isAdmin) {
-      alert("Only Admin can delete customers");
+      alert("❌ Only Admin can delete customers");
       return;
     }
 
     if (!window.confirm("Delete customer?")) return;
 
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/customers/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/customers/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       fetchCustomers();
     } catch (err) {
-      console.error("DELETE CUSTOMER ERROR:", err);
-      alert("Delete failed");
+      console.error("DELETE CUSTOMER ERROR:", err.response?.data || err.message);
+      alert("❌ Delete failed");
     }
   };
 
@@ -164,33 +173,41 @@ const Customers = () => {
         </thead>
 
         <tbody>
-          {customers.map((c) => (
-            <tr key={c._id}>
-              <td>{c.name}</td>
-              <td>{c.email}</td>
-              <td>{c.phone}</td>
-              <td>{c.address}</td>
-              <td>
-                {(isAdmin || isSales) && (
-                  <button
-                    className="action-btn edit-btn"
-                    onClick={() => editCustomer(c)}
-                  >
-                    Edit
-                  </button>
-                )}
-
-                {isAdmin && (
-                  <button
-                    className="action-btn delete-btn"
-                    onClick={() => deleteCustomer(c._id)}
-                  >
-                    Delete
-                  </button>
-                )}
+          {customers.length === 0 ? (
+            <tr>
+              <td colSpan="5" className="no-data">
+                No customers found
               </td>
             </tr>
-          ))}
+          ) : (
+            customers.map((c) => (
+              <tr key={c._id}>
+                <td>{c.name}</td>
+                <td>{c.email}</td>
+                <td>{c.phone}</td>
+                <td>{c.address}</td>
+                <td>
+                  {(isAdmin || isSales) && (
+                    <button
+                      className="action-btn edit-btn"
+                      onClick={() => editCustomer(c)}
+                    >
+                      Edit
+                    </button>
+                  )}
+
+                  {isAdmin && (
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={() => deleteCustomer(c._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

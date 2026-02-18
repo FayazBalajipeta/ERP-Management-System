@@ -13,6 +13,10 @@ import {
   Bar,
 } from "recharts";
 
+// ✅ API Base URL (works local + deployed)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const Dashboard = () => {
   const token = localStorage.getItem("token");
 
@@ -20,7 +24,7 @@ const Dashboard = () => {
     products: 0,
     customers: 0,
     salesOrders: 0,
-    purchaseOrders: 0,   // ✅ added
+    purchaseOrders: 0,
     grns: 0,
     invoices: 0,
     totalRevenue: 0,
@@ -30,15 +34,17 @@ const Dashboard = () => {
   const [lowStock, setLowStock] = useState([]);
 
   const fetchDashboard = useCallback(async () => {
+    if (!token) return;
+
     try {
       const [statsRes, revenueRes, lowStockRes] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_API_URL}/api/dashboard`, {
+        axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${process.env.REACT_APP_API_URL}/api/dashboard/revenue-graph`, {
+        axios.get(`${API_BASE_URL}/api/dashboard/revenue-graph`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${process.env.REACT_APP_API_URL}/api/dashboard/low-stock`, {
+        axios.get(`${API_BASE_URL}/api/dashboard/low-stock`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -47,13 +53,14 @@ const Dashboard = () => {
       setSalesData(revenueRes.data);
       setLowStock(lowStockRes.data);
     } catch (err) {
-      console.error("DASHBOARD FETCH ERROR:", err);
+      console.error("DASHBOARD FETCH ERROR:", err.response?.data || err.message);
     }
   }, [token]);
 
   useEffect(() => {
     fetchDashboard();
-    const interval = setInterval(fetchDashboard, 5000); // 🔥 real-time refresh every 5 sec
+
+    const interval = setInterval(fetchDashboard, 5000); // 🔥 realtime refresh
     return () => clearInterval(interval);
   }, [fetchDashboard]);
 

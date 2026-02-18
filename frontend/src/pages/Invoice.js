@@ -2,6 +2,10 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Invoice.css";
 
+// ✅ API Base URL (Production + Local fallback)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 function Invoice() {
   const [invoices, setInvoices] = useState([]);
   const [salesOrders, setSalesOrders] = useState([]);
@@ -26,20 +30,28 @@ function Invoice() {
   // Fetch Invoices
   // =========================
   const fetchInvoices = useCallback(async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/invoice`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setInvoices(res.data);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/invoice`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setInvoices(res.data);
+    } catch (err) {
+      console.error("FETCH INVOICES ERROR:", err.response?.data || err.message);
+    }
   }, [token]);
 
   // =========================
   // Fetch Sales Orders
   // =========================
   const fetchSalesOrders = useCallback(async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/sales-orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setSalesOrders(res.data);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/sales-orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSalesOrders(res.data);
+    } catch (err) {
+      console.error("FETCH SALES ORDERS ERROR:", err.response?.data || err.message);
+    }
   }, [token]);
 
   useEffect(() => {
@@ -85,20 +97,25 @@ function Invoice() {
       return;
     }
 
-    if (editId) {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/${editId}`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } else {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/invoice`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    }
+    try {
+      if (editId) {
+        await axios.put(
+          `${API_BASE_URL}/api/invoice/${editId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        await axios.post(`${API_BASE_URL}/api/invoice`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
-    resetForm();
-    fetchInvoices();
+      resetForm();
+      fetchInvoices();
+    } catch (err) {
+      console.error("SAVE INVOICE ERROR:", err.response?.data || err.message);
+      alert("Invoice save failed");
+    }
   };
 
   const resetForm = () => {
@@ -139,17 +156,22 @@ function Invoice() {
 
     if (!window.confirm("Delete this invoice?")) return;
 
-    await axios.delete(`${process.env.REACT_APP_API_URL}/api/invoice/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchInvoices();
+    try {
+      await axios.delete(`${API_BASE_URL}/api/invoice/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchInvoices();
+    } catch (err) {
+      console.error("DELETE INVOICE ERROR:", err.response?.data || err.message);
+      alert("Delete failed");
+    }
   };
 
   // =========================
   // PDF Download
   // =========================
   const downloadPDF = async (id) => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/invoice/${id}/pdf`, {
+    const res = await fetch(`${API_BASE_URL}/api/invoice/${id}/pdf`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -181,18 +203,14 @@ function Invoice() {
             placeholder="Customer Name"
             value={form.customerName}
             disabled={!!salesOrderId}
-            onChange={(e) =>
-              setForm({ ...form, customerName: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, customerName: e.target.value })}
           />
 
           <input
             placeholder="Product Name"
             value={form.productName}
             disabled={!!salesOrderId}
-            onChange={(e) =>
-              setForm({ ...form, productName: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, productName: e.target.value })}
           />
 
           <input
@@ -200,18 +218,14 @@ function Invoice() {
             placeholder="Quantity"
             value={form.quantity}
             disabled={!!salesOrderId}
-            onChange={(e) =>
-              setForm({ ...form, quantity: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
           />
 
           <input
             type="number"
             placeholder="Price Per Unit"
             value={form.price}
-            onChange={(e) =>
-              setForm({ ...form, price: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
           />
 
           <button className="invoice-create-btn" onClick={handleSubmit}>

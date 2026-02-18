@@ -1,6 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./Register.css";
+
+// ✅ API Base URL (local + deployed)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -8,38 +13,43 @@ function Register() {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  
-const handleRegister = async (e) => {
-  e.preventDefault();
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-  if (formData.password !== formData.confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
 
-  try {
-    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
-    });
+    try {
+      setLoading(true);
 
-    alert("Registration successful");
-    window.location.href = "/";
-  } catch (err) {
-    alert(err.response?.data?.message || "Registration failed");
-  }
-};
+      await axios.post(`${API_BASE_URL}/api/auth/register`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+      });
 
-
+      alert("✅ Registration successful");
+      navigate("/"); // go to login page
+    } catch (err) {
+      console.error("REGISTER ERROR:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="register-page">
@@ -92,14 +102,14 @@ const handleRegister = async (e) => {
             required
           />
 
-          <button type="submit">Register</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Registering..." : "Register"}
+          </button>
         </form>
 
         <p className="login-link">
           Already have an account?{" "}
-          <span onClick={() => (window.location.href = "/")}>
-            Login
-          </span>
+          <span onClick={() => navigate("/")}>Login</span>
         </p>
       </div>
     </div>

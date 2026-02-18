@@ -3,6 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./PurchaseOrders.css";
 
+// ✅ API Base URL (works for local + deployed)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 function PurchaseOrders() {
   const [supplierName, setSupplierName] = useState("");
   const [productName, setProductName] = useState("");
@@ -14,14 +18,22 @@ function PurchaseOrders() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
+  // ✅ Safe user role
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user?.role;
+  const isAdmin = role === "Admin";
+  const isUser = role === "User";
+
+  // ================= FETCH PURCHASE ORDERS =================
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/purchase-orders`, {
+      const res = await axios.get(`${API_BASE_URL}/api/purchase-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data);
     } catch (err) {
-      console.error("FETCH PO ERROR:", err);
+      console.error("FETCH PO ERROR:", err.response?.data || err.message);
+      alert("Failed to load purchase orders");
     }
   }, [token]);
 
@@ -29,93 +41,124 @@ function PurchaseOrders() {
     fetchOrders();
   }, [fetchOrders]);
 
+  // ================= CREATE / UPDATE =================
   const createOrUpdateOrder = async () => {
     if (!supplierName || !productName || !quantity) {
       alert("All fields required");
       return;
     }
 
+    const payload = {
+      supplierName,
+      productName,
+      quantity: Number(quantity),
+      status,
+    };
+
     try {
       if (editId) {
         await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/purchase-orders/${editId}`,
-          { supplierName, productName, quantity, status },
+          `${API_BASE_URL}/api/purchase-orders/${editId}`,
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/purchase-orders`,
-          { supplierName, productName, quantity, status },
+          `${API_BASE_URL}/api/purchase-orders`,
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
 
-      setSupplierName("");
-      setProductName("");
-      setQuantity("");
-      setStatus("Pending");
-      setEditId(null);
+      clearForm();
       fetchOrders();
     } catch (err) {
-      console.error("CREATE/UPDATE PO ERROR:", err);
+      console.error("CREATE/UPDATE PO ERROR:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "You are not allowed to perform this action");
     }
   };
 
+  // ================= EDIT =================
   const editOrder = (order) => {
+    if (!isAdmin && !isUser) {
+      alert("You are not allowed to edit purchase orders");
+      return;
+    }
+
     setSupplierName(order.supplier);
     setProductName(order.product);
-    setQuantity(order.quantity);
+    setQuantity(order.quantity?.toString());
     setStatus(order.status);
     setEditId(order._id);
   };
 
+  // ================= DELETE (Admin only) =================
   const deleteOrder = async (id) => {
+    if (!isAdmin) {
+      alert("Only Admin can delete purchase orders");
+      return;
+    }
+
     if (!window.confirm("Delete this Purchase Order?")) return;
 
     try {
-      await axios.delete(`h${process.env.REACT_APP_API_URL}/api/purchase-orders/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/purchase-orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();
     } catch (err) {
-      console.error("DELETE PO ERROR:", err);
+      console.error("DELETE PO ERROR:", err.response?.data || err.message);
+      alert("Delete failed");
     }
+  };
+
+  const clearForm = () => {
+    setSupplierName("");
+    setProductName("");
+    setQuantity("");
+    setStatus("Pending");
+    setEditId(null);
   };
 
   return (
     <div className="po-container">
       <h2>Purchase Orders</h2>
 
-      {/* ===== FORM ===== */}
-      <div className="po-form">
-        <input
-          placeholder="Supplier Name"
-          value={supplierName}
-          onChange={(e) => setSupplierName(e.target.value)}
-        />
-        <input
-          placeholder="Product Name"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option>Pending</option>
-          <option>Approved</option>
-          <option>Rejected</option>
-        </select>
+      {/* ================= FORM ================= */}
+      {(isAdmin || isUser) && (
+        <div className="po-form">
+          <input
+            placeholder="Supplier Name"
+            value={supplierName}
+            onChange={(e) => setSupplierName(e.target.value)}
+          />
 
-        <button className="po-create-btn" onClick={createOrUpdateOrder}>
-          {editId ? "Update Purchase Order" : "Create Purchase Order"}
-        </button>
-      </div>
+          <input
+            placeholder="Product Name"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+          />
 
-      {/* ===== TABLE ===== */}
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+
+          <button className="po-create-btn" onClick={createOrUpdateOrder}>
+            {editId ? "Update Purchase Order" : "Create Purchase Order"}
+          </button>
+        </div>
+      )}
+
+      {/* ================= TABLE ================= */}
       <table className="po-table">
         <thead>
           <tr>
@@ -181,15 +224,24 @@ function PurchaseOrders() {
                 </td>
 
                 <td>
-                  <button className="edit-btn" onClick={() => editOrder(order)}>
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteOrder(order._id)}
-                  >
-                    Delete
-                  </button>
+                  {(isAdmin || isUser) && (
+                    <button
+                      className="edit-btn"
+                      onClick={() => editOrder(order)}
+                    >
+                      Edit
+                    </button>
+                  )}
+
+                  {/* ✅ Delete only for Admin */}
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteOrder(order._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))

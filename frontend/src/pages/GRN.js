@@ -3,6 +3,10 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./GRN.css";
 
+// ✅ API Base URL (works in local + Vercel)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const GRN = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,8 +21,8 @@ const GRN = () => {
 
   const token = localStorage.getItem("token");
 
-  // ✅ Get user role
-  const user = JSON.parse(localStorage.getItem("user"));
+  // ✅ Safe user parsing
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user?.role;
   const isAdmin = role === "Admin";
 
@@ -39,12 +43,12 @@ const GRN = () => {
   // ================================
   const fetchGRNs = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/grn`, {
+      const res = await axios.get(`${API_BASE_URL}/api/grn`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setGrns(res.data);
     } catch (err) {
-      console.error("FETCH GRN ERROR 👉", err);
+      console.error("FETCH GRN ERROR 👉", err.response?.data || err.message);
     }
   }, [token]);
 
@@ -83,11 +87,11 @@ const GRN = () => {
       };
 
       if (editId) {
-        await axios.put(`${process.env.REACT_APP_API_URL}/api/grn/${editId}`, payload, {
+        await axios.put(`${API_BASE_URL}/api/grn/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post(`${process.env.REACT_APP_API_URL}/api/grn`, payload, {
+        await axios.post(`${API_BASE_URL}/api/grn`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -96,13 +100,13 @@ const GRN = () => {
       fetchGRNs();
       navigate("/grn", { replace: true });
     } catch (err) {
-      console.error("GRN ERROR 👉", err);
-      alert("GRN failed");
+      console.error("GRN ERROR 👉", err.response?.data || err.message);
+      alert(err.response?.data?.message || "GRN failed");
     }
   };
 
   // ================================
-  // Edit GRN
+  // Edit GRN (Admin only UI-wise)
   // ================================
   const editGRN = (g) => {
     setEditId(g._id);
@@ -117,16 +121,21 @@ const GRN = () => {
   // Delete GRN (Admin only)
   // ================================
   const deleteGRN = async (id) => {
+    if (!isAdmin) {
+      alert("Only Admin can delete GRNs");
+      return;
+    }
+
     if (!window.confirm("Delete this GRN?")) return;
 
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/grn/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/grn/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchGRNs();
     } catch (err) {
-      console.error("DELETE GRN ERROR 👉", err);
-      alert("You are not allowed to delete GRNs");
+      console.error("DELETE GRN ERROR 👉", err.response?.data || err.message);
+      alert("Delete failed");
     }
   };
 
@@ -204,7 +213,6 @@ const GRN = () => {
                     Edit
                   </button>
 
-                  {/* ✅ Delete only for Admin */}
                   {isAdmin && (
                     <button
                       className="delete-btn"

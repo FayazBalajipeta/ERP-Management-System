@@ -2,12 +2,11 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import {
-  FaEnvelope,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-} from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+
+// ✅ API Base URL (Production + Local fallback)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -23,36 +22,41 @@ function Login() {
 
     try {
       const res = await axios.post(
-  `${process.env.REACT_APP_API_URL}/api/auth/login`,
-  { email, password }
-);
-
+        `${API_BASE_URL}/api/auth/login`,
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       console.log("LOGIN RESPONSE:", res.data);
 
       // 🔐 Validate backend response
-      if (!res.data.token) {
-        alert("Login failed: token missing");
+      if (!res.data?.token) {
+        alert("Login failed: token missing from server");
         return;
       }
 
-      // ✅ Safely store auth data (NO unused variable)
+      // ✅ Store auth info
       localStorage.setItem("token", res.data.token);
       localStorage.setItem(
         "user",
-        JSON.stringify(
-          res.data.user || { role: res.data.role || "user" }
-        )
+        JSON.stringify(res.data.user || { role: res.data.role || "User" })
       );
 
       const storedUser = JSON.parse(localStorage.getItem("user"));
-      console.log("USER ROLE:", storedUser.role);
+      console.log("USER ROLE:", storedUser?.role);
 
-      // ✅ Navigate to dashboard
+      // ✅ Navigate after login
       navigate("/dashboard");
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
-      alert(err.response?.data?.message || "Invalid email or password");
+      console.error("LOGIN ERROR:", err.response?.data || err.message);
+
+      if (err.response?.status === 401) {
+        alert("❌ Invalid email or password");
+      } else if (err.response?.status === 404) {
+        alert("❌ API not found. Check backend URL");
+      } else {
+        alert("❌ Login failed. Please try again");
+      }
     } finally {
       setLoading(false);
     }

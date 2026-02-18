@@ -2,6 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Products.css";
 
+// ✅ API Base URL (works on local + Vercel)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const Products = () => {
   const [title, setTitle] = useState("");
   const [sku, setSku] = useState("");
@@ -13,8 +17,8 @@ const Products = () => {
 
   const token = localStorage.getItem("token");
 
-  // ✅ Get user role
-  const user = JSON.parse(localStorage.getItem("user"));
+  // ✅ Safe user parsing
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user?.role;
   const isAdmin = role === "Admin";
 
@@ -24,15 +28,13 @@ const Products = () => {
 
     try {
       setLoading(true);
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/products`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axios.get(`${API_BASE_URL}/api/products`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(res.data);
     } catch (err) {
       console.error("Fetch products error:", err.response?.data || err.message);
-      alert("Failed to load products");
+      alert(err.response?.data?.message || "Failed to load products");
     } finally {
       setLoading(false);
     }
@@ -61,19 +63,15 @@ const Products = () => {
 
       if (editId) {
         await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/products/${editId}`,
+          `${API_BASE_URL}/api/products/${editId}`,
           payload,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/products`,
+          `${API_BASE_URL}/api/products`,
           payload,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       }
 
@@ -81,25 +79,30 @@ const Products = () => {
       fetchProducts();
     } catch (err) {
       console.error("Save product error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Failed to save product");
+      alert(err.response?.data?.message || "You are not allowed to perform this action");
     } finally {
       setLoading(false);
     }
   };
 
-  // ================= DELETE PRODUCT =================
+  // ================= DELETE PRODUCT (Admin only) =================
   const deleteProduct = async (id) => {
+    if (!isAdmin) {
+      alert("Only Admin can delete products");
+      return;
+    }
+
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
       setLoading(true);
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/products/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchProducts();
     } catch (err) {
       console.error("Delete product error:", err.response?.data || err.message);
-      alert("You are not allowed to delete products");
+      alert("Delete failed");
     } finally {
       setLoading(false);
     }
@@ -127,7 +130,7 @@ const Products = () => {
     <div className="products-container">
       <h2>Product Management</h2>
 
-      {/* FORM */}
+      {/* ================= FORM ================= */}
       <div className="product-form">
         <input
           placeholder="Product Name"
@@ -166,7 +169,7 @@ const Products = () => {
         )}
       </div>
 
-      {/* TABLE */}
+      {/* ================= TABLE ================= */}
       {loading ? (
         <p>Loading...</p>
       ) : products.length === 0 ? (
@@ -191,10 +194,7 @@ const Products = () => {
                 <td>₹{p.price}</td>
                 <td>{p.stock}</td>
                 <td>
-                  <button
-                    className="edit-btn"
-                    onClick={() => editProduct(p)}
-                  >
+                  <button className="edit-btn" onClick={() => editProduct(p)}>
                     Edit
                   </button>
 

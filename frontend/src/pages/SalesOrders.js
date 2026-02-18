@@ -2,6 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./SalesOrders.css";
 
+// ✅ API Base URL (local + deployed)
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const SalesOrders = () => {
   const [orders, setOrders] = useState([]);
   const [customerName, setCustomerName] = useState("");
@@ -9,18 +13,28 @@ const SalesOrders = () => {
   const [quantity, setQuantity] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user?.role;
+
+  const isAdmin = role === "Admin";
+  const isSales = role === "Sales";
 
   /* ============================= */
   /* Fetch Orders                  */
   /* ============================= */
   const fetchOrders = useCallback(async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/sales-orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setOrders(res.data);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/sales-orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data);
+    } catch (err) {
+      console.error("FETCH SALES ORDERS ERROR:", err.response?.data || err.message);
+      alert("Failed to load sales orders");
+    }
   }, [token]);
 
   useEffect(() => {
@@ -39,34 +53,45 @@ const SalesOrders = () => {
     const payload = {
       customerName,
       productName,
-      quantity,
-      totalAmount,
+      quantity: Number(quantity),
+      totalAmount: Number(totalAmount),
     };
 
-    if (editId) {
-      // UPDATE
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/sales-orders/${editId}`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } else {
-      // CREATE
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/sales-orders`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    }
+    try {
+      setLoading(true);
 
-    clearForm();
-    fetchOrders();
+      if (editId) {
+        // UPDATE
+        await axios.put(
+          `${API_BASE_URL}/api/sales-orders/${editId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // CREATE
+        await axios.post(
+          `${API_BASE_URL}/api/sales-orders`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      clearForm();
+      fetchOrders();
+    } catch (err) {
+      console.error("SAVE SALES ORDER ERROR:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Failed to save order");
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* ============================= */
   /* Edit Order                    */
   /* ============================= */
   const editOrder = (order) => {
+    if (!isAdmin && !isSales) return;
+
     setEditId(order._id);
     setCustomerName(order.customerName);
     setProductName(order.productName);
@@ -75,16 +100,25 @@ const SalesOrders = () => {
   };
 
   /* ============================= */
-  /* Delete Order                  */
+  /* Delete Order (Admin only)     */
   /* ============================= */
   const deleteOrder = async (id) => {
+    if (!isAdmin) {
+      alert("Only Admin can delete sales orders");
+      return;
+    }
+
     if (!window.confirm("Delete order?")) return;
 
-    await axios.delete(`${process.env.REACT_APP_API_URL}/api/sales-orders/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    fetchOrders();
+    try {
+      await axios.delete(`${API_BASE_URL}/api/sales-orders/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchOrders();
+    } catch (err) {
+      console.error("DELETE SALES ORDER ERROR:", err.response?.data || err.message);
+      alert("Delete failed");
+    }
   };
 
   /* ============================= */
@@ -105,7 +139,7 @@ const SalesOrders = () => {
       {/* ============================= */}
       {/* CREATE / UPDATE FORM          */}
       {/* ============================= */}
-      {(user.role === "Admin" || user.role === "Sales") && (
+      {(isAdmin || isSales) && (
         <div className="sales-form">
           <input
             placeholder="Customer Name"
@@ -130,8 +164,8 @@ const SalesOrders = () => {
             onChange={(e) => setTotalAmount(e.target.value)}
           />
 
-          <button onClick={saveOrder}>
-            {editId ? "Update Order" : "Create Order"}
+          <button onClick={saveOrder} disabled={loading}>
+            {loading ? "Saving..." : editId ? "Update Order" : "Create Order"}
           </button>
 
           {editId && (
@@ -162,50 +196,48 @@ const SalesOrders = () => {
             <th>Qty</th>
             <th>Total</th>
             <th>Status</th>
-            {(user.role === "Admin" || user.role === "Sales") && (
-              <th>Actions</th>
-            )}
+            {(isAdmin || isSales) && <th>Actions</th>}
           </tr>
         </thead>
 
         <tbody>
-          {orders.map((o) => (
-            <tr key={o._id}>
-              <td>{o.customerName}</td>
-              <td>{o.productName}</td>
-              <td>{o.quantity}</td>
-              <td>₹{o.totalAmount}</td>
-              <td>{o.status || "Pending"}</td>
-
-              {(user.role === "Admin" || user.role === "Sales") && (
-                <td>
-                  <button
-                    className="edit-btn"
-                    style={{
-                      background: "#ffc107",
-                      border: "none",
-                      padding: "6px 12px",
-                      marginRight: "8px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => editOrder(o)}
-                  >
-                    Edit
-                  </button>
-
-                  {user.role === "Admin" && (
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteOrder(o._id)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </td>
-              )}
+          {orders.length === 0 ? (
+            <tr>
+              <td colSpan="6" className="no-data">
+                No Sales Orders
+              </td>
             </tr>
-          ))}
+          ) : (
+            orders.map((o) => (
+              <tr key={o._id}>
+                <td>{o.customerName}</td>
+                <td>{o.productName}</td>
+                <td>{o.quantity}</td>
+                <td>₹{o.totalAmount}</td>
+                <td>{o.status || "Pending"}</td>
+
+                {(isAdmin || isSales) && (
+                  <td>
+                    <button
+                      className="edit-btn"
+                      onClick={() => editOrder(o)}
+                    >
+                      Edit
+                    </button>
+
+                    {isAdmin && (
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteOrder(o._id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </td>
+                )}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

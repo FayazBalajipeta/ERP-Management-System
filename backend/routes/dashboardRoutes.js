@@ -9,8 +9,9 @@ const { protect } = require("../middleware/authMiddleware");
 
 /* ===========================
    DASHBOARD STATS (REALTIME)
+   URL: /api/dashboard/stats
 =========================== */
-router.get("/", protect, async (req, res) => {
+router.get("/stats", protect, async (req, res) => {
   try {
     const [
       products,
@@ -51,6 +52,7 @@ router.get("/", protect, async (req, res) => {
 
 /* ===========================
    REVENUE GRAPH
+   URL: /api/dashboard/revenue-graph
 =========================== */
 router.get("/revenue-graph", protect, async (req, res) => {
   try {
@@ -58,7 +60,7 @@ router.get("/revenue-graph", protect, async (req, res) => {
       {
         $group: {
           _id: { $month: "$createdAt" },
-          revenue: { $sum: "$total" }, // FIXED FIELD
+          revenue: { $sum: "$total" },
         },
       },
       { $sort: { _id: 1 } },
@@ -83,6 +85,7 @@ router.get("/revenue-graph", protect, async (req, res) => {
 
 /* ===========================
    LOW STOCK ALERT
+   URL: /api/dashboard/low-stock
 =========================== */
 router.get("/low-stock", protect, async (req, res) => {
   try {

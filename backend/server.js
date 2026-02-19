@@ -6,20 +6,39 @@ require("dotenv").config();
 const app = express();
 
 // =============================
-// Middlewares
+// ✅ CORS CONFIG (Express 5 SAFE)
 // =============================
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://erp-management-system-eael.vercel.app",
+  "https://erp-management-system-three.vercel.app",
+  "https://erp-management-system-eeal.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://erp-management-system-eael.vercel.app",
-      "https://erp-management-system-three.vercel.app"
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
+    credentials: true,
   })
 );
+
+// ✅ Express 5 preflight fix
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return cors()(req, res, next);
+  }
+  next();
+});
 
 app.use(express.json());
 
@@ -71,9 +90,10 @@ app.use((err, req, res, next) => {
 });
 
 // =============================
-// Server
+// ✅ SERVER START (THIS WAS MISSING)
 // =============================
-const PORT = process.env.PORT || 10000; // Render uses 10000
+const PORT = process.env.PORT || 10000;
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

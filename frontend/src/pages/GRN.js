@@ -3,9 +3,10 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./GRN.css";
 
-// ✅ API Base URL (works in local + Vercel)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 const GRN = () => {
   const location = useLocation();
@@ -45,10 +46,12 @@ const GRN = () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/grn`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setGrns(res.data);
     } catch (err) {
       console.error("FETCH GRN ERROR 👉", err.response?.data || err.message);
+      alert("Failed to load GRNs");
     }
   }, [token]);
 
@@ -89,10 +92,12 @@ const GRN = () => {
       if (editId) {
         await axios.put(`${API_BASE_URL}/api/grn/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
       } else {
         await axios.post(`${API_BASE_URL}/api/grn`, payload, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
       }
 
@@ -109,6 +114,8 @@ const GRN = () => {
   // Edit GRN (Admin only UI-wise)
   // ================================
   const editGRN = (g) => {
+    if (!isAdmin) return;
+
     setEditId(g._id);
     setVendorName(g.vendorName || "");
     setProductName(g.productName || "");
@@ -131,6 +138,7 @@ const GRN = () => {
     try {
       await axios.delete(`${API_BASE_URL}/api/grn/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchGRNs();
     } catch (err) {
@@ -209,17 +217,18 @@ const GRN = () => {
                 <td>₹{g.totalAmount ?? g.quantityReceived * g.pricePerUnit}</td>
                 <td>{g.purchaseOrderId ? "Linked" : "Manual"}</td>
                 <td>
-                  <button className="edit-btn" onClick={() => editGRN(g)}>
-                    Edit
-                  </button>
-
                   {isAdmin && (
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteGRN(g._id)}
-                    >
-                      Delete
-                    </button>
+                    <>
+                      <button className="edit-btn" onClick={() => editGRN(g)}>
+                        Edit
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteGRN(g._id)}
+                      >
+                        Delete
+                      </button>
+                    </>
                   )}
                 </td>
               </tr>

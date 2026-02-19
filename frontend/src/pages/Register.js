@@ -3,9 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
 
-// ✅ API Base URL (local + deployed)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -27,25 +28,32 @@ function Register() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      alert("❌ Passwords do not match");
       return;
     }
 
     try {
       setLoading(true);
 
-      await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      });
+      await axios.post(
+        `${API_BASE_URL}/api/auth/register`,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
 
       alert("✅ Registration successful");
       navigate("/"); // go to login page
     } catch (err) {
       console.error("REGISTER ERROR:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Registration failed");
+      alert(err.response?.data?.message || "❌ Registration failed");
     } finally {
       setLoading(false);
     }

@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./SalesOrders.css";
 
-// ✅ API Base URL (local + deployed)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 const SalesOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -29,11 +30,15 @@ const SalesOrders = () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/sales-orders`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setOrders(res.data);
     } catch (err) {
-      console.error("FETCH SALES ORDERS ERROR:", err.response?.data || err.message);
-      alert("Failed to load sales orders");
+      console.error(
+        "FETCH SALES ORDERS ERROR:",
+        err.response?.data || err.message
+      );
+      alert("❌ Failed to load sales orders");
     }
   }, [token]);
 
@@ -65,22 +70,27 @@ const SalesOrders = () => {
         await axios.put(
           `${API_BASE_URL}/api/sales-orders/${editId}`,
           payload,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
         );
       } else {
         // CREATE
-        await axios.post(
-          `${API_BASE_URL}/api/sales-orders`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.post(`${API_BASE_URL}/api/sales-orders`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
       }
 
       clearForm();
       fetchOrders();
     } catch (err) {
-      console.error("SAVE SALES ORDER ERROR:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Failed to save order");
+      console.error(
+        "SAVE SALES ORDER ERROR:",
+        err.response?.data || err.message
+      );
+      alert(err.response?.data?.message || "❌ Failed to save order");
     } finally {
       setLoading(false);
     }
@@ -113,11 +123,15 @@ const SalesOrders = () => {
     try {
       await axios.delete(`${API_BASE_URL}/api/sales-orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchOrders();
     } catch (err) {
-      console.error("DELETE SALES ORDER ERROR:", err.response?.data || err.message);
-      alert("Delete failed");
+      console.error(
+        "DELETE SALES ORDER ERROR:",
+        err.response?.data || err.message
+      );
+      alert("❌ Delete failed");
     }
   };
 

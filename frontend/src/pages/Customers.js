@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Customers.css";
 
-// ✅ API base URL (works for both local + production)
+// ✅ API base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -30,6 +31,7 @@ const Customers = () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setCustomers(res.data);
     } catch (err) {
@@ -58,11 +60,15 @@ const Customers = () => {
         await axios.put(
           `${API_BASE_URL}/api/customers/${editId}`,
           payload,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
         );
       } else {
         await axios.post(`${API_BASE_URL}/api/customers`, payload, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
       }
 
@@ -104,6 +110,7 @@ const Customers = () => {
     try {
       await axios.delete(`${API_BASE_URL}/api/customers/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchCustomers();
     } catch (err) {

@@ -13,9 +13,10 @@ import {
   Bar,
 } from "recharts";
 
-// ✅ API Base URL (works local + deployed)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
@@ -40,12 +41,15 @@ const Dashboard = () => {
       const [statsRes, revenueRes, lowStockRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         }),
         axios.get(`${API_BASE_URL}/api/dashboard/revenue-graph`, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         }),
         axios.get(`${API_BASE_URL}/api/dashboard/low-stock`, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         }),
       ]);
 

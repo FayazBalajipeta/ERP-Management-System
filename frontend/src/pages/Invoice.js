@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Invoice.css";
 
-// ✅ API Base URL (Production + Local fallback)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 function Invoice() {
   const [invoices, setInvoices] = useState([]);
@@ -33,10 +34,12 @@ function Invoice() {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/invoice`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setInvoices(res.data);
     } catch (err) {
       console.error("FETCH INVOICES ERROR:", err.response?.data || err.message);
+      alert("Failed to load invoices");
     }
   }, [token]);
 
@@ -47,10 +50,14 @@ function Invoice() {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/sales-orders`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setSalesOrders(res.data);
     } catch (err) {
-      console.error("FETCH SALES ORDERS ERROR:", err.response?.data || err.message);
+      console.error(
+        "FETCH SALES ORDERS ERROR:",
+        err.response?.data || err.message
+      );
     }
   }, [token]);
 
@@ -81,7 +88,12 @@ function Invoice() {
   // Create / Update
   // =========================
   const handleSubmit = async () => {
-    if (!form.customerName || !form.productName || !form.quantity || !form.price) {
+    if (
+      !form.customerName ||
+      !form.productName ||
+      !form.quantity ||
+      !form.price
+    ) {
       alert("All fields required");
       return;
     }
@@ -99,14 +111,14 @@ function Invoice() {
 
     try {
       if (editId) {
-        await axios.put(
-          `${API_BASE_URL}/api/invoice/${editId}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.put(`${API_BASE_URL}/api/invoice/${editId}`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
       } else {
         await axios.post(`${API_BASE_URL}/api/invoice`, payload, {
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
       }
 
@@ -114,7 +126,7 @@ function Invoice() {
       fetchInvoices();
     } catch (err) {
       console.error("SAVE INVOICE ERROR:", err.response?.data || err.message);
-      alert("Invoice save failed");
+      alert(err.response?.data?.message || "Invoice save failed");
     }
   };
 
@@ -159,6 +171,7 @@ function Invoice() {
     try {
       await axios.delete(`${API_BASE_URL}/api/invoice/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchInvoices();
     } catch (err) {
@@ -203,14 +216,18 @@ function Invoice() {
             placeholder="Customer Name"
             value={form.customerName}
             disabled={!!salesOrderId}
-            onChange={(e) => setForm({ ...form, customerName: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, customerName: e.target.value })
+            }
           />
 
           <input
             placeholder="Product Name"
             value={form.productName}
             disabled={!!salesOrderId}
-            onChange={(e) => setForm({ ...form, productName: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, productName: e.target.value })
+            }
           />
 
           <input
@@ -250,7 +267,9 @@ function Invoice() {
         <tbody>
           {invoices.length === 0 ? (
             <tr>
-              <td colSpan="7" className="no-data">No Invoices</td>
+              <td colSpan="7" className="no-data">
+                No Invoices
+              </td>
             </tr>
           ) : (
             invoices.map((inv) => (
@@ -261,15 +280,28 @@ function Invoice() {
                 <td>₹{inv.total}</td>
                 <td>{inv.salesOrderId ? "Linked" : "Manual"}</td>
                 <td>
-                  <button className="download-btn" onClick={() => downloadPDF(inv._id)}>
+                  <button
+                    className="download-btn"
+                    onClick={() => downloadPDF(inv._id)}
+                  >
                     Download
                   </button>
                 </td>
 
                 {isAdmin && (
                   <td>
-                    <button className="edit-btn" onClick={() => handleEdit(inv)}>Edit</button>
-                    <button className="delete-btn" onClick={() => handleDelete(inv._id)}>Delete</button>
+                    <button
+                      className="edit-btn"
+                      onClick={() => handleEdit(inv)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(inv._id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 )}
               </tr>

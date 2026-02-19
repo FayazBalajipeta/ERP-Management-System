@@ -1,9 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
 
-// ✅ API Base URL (local + deployed)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -23,10 +24,11 @@ function ForgotPassword() {
 
       const res = await axios.post(
         `${API_BASE_URL}/api/auth/forgot-password`,
-        { email, newPassword }
+        { email, newPassword },
+        { withCredentials: true }
       );
 
-      alert(res.data.message || "Password reset successful");
+      alert(res.data?.message || "Password reset successful");
       window.location.href = "/";
     } catch (err) {
       console.error("FORGOT PASSWORD ERROR:", err.response?.data || err.message);
@@ -48,7 +50,8 @@ function ForgotPassword() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <br /><br />
+        <br />
+        <br />
 
         <input
           type="password"
@@ -57,7 +60,8 @@ function ForgotPassword() {
           onChange={(e) => setNewPassword(e.target.value)}
           required
         />
-        <br /><br />
+        <br />
+        <br />
 
         <button type="submit" disabled={loading}>
           {loading ? "Resetting..." : "Reset Password"}

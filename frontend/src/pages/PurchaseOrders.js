@@ -3,9 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./PurchaseOrders.css";
 
-// ✅ API Base URL (works for local + deployed)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 function PurchaseOrders() {
   const [supplierName, setSupplierName] = useState("");
@@ -29,11 +30,12 @@ function PurchaseOrders() {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/purchase-orders`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setOrders(res.data);
     } catch (err) {
       console.error("FETCH PO ERROR:", err.response?.data || err.message);
-      alert("Failed to load purchase orders");
+      alert("❌ Failed to load purchase orders");
     }
   }, [token]);
 
@@ -60,21 +62,26 @@ function PurchaseOrders() {
         await axios.put(
           `${API_BASE_URL}/api/purchase-orders/${editId}`,
           payload,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
         );
       } else {
-        await axios.post(
-          `${API_BASE_URL}/api/purchase-orders`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.post(`${API_BASE_URL}/api/purchase-orders`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
       }
 
       clearForm();
       fetchOrders();
     } catch (err) {
       console.error("CREATE/UPDATE PO ERROR:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "You are not allowed to perform this action");
+      alert(
+        err.response?.data?.message ||
+          "❌ You are not allowed to perform this action"
+      );
     }
   };
 
@@ -104,11 +111,12 @@ function PurchaseOrders() {
     try {
       await axios.delete(`${API_BASE_URL}/api/purchase-orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchOrders();
     } catch (err) {
       console.error("DELETE PO ERROR:", err.response?.data || err.message);
-      alert("Delete failed");
+      alert("❌ Delete failed");
     }
   };
 

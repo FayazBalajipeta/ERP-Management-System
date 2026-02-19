@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./Products.css";
 
-// ✅ API Base URL (works on local + Vercel)
+// ✅ API Base URL (Vercel env + Render fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 const Products = () => {
   const [title, setTitle] = useState("");
@@ -30,6 +31,7 @@ const Products = () => {
       setLoading(true);
       const res = await axios.get(`${API_BASE_URL}/api/products`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setProducts(res.data);
     } catch (err) {
@@ -65,21 +67,26 @@ const Products = () => {
         await axios.put(
           `${API_BASE_URL}/api/products/${editId}`,
           payload,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
         );
       } else {
-        await axios.post(
-          `${API_BASE_URL}/api/products`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.post(`${API_BASE_URL}/api/products`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
       }
 
       clearForm();
       fetchProducts();
     } catch (err) {
       console.error("Save product error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "You are not allowed to perform this action");
+      alert(
+        err.response?.data?.message ||
+          "❌ You are not allowed to perform this action"
+      );
     } finally {
       setLoading(false);
     }
@@ -98,11 +105,12 @@ const Products = () => {
       setLoading(true);
       await axios.delete(`${API_BASE_URL}/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchProducts();
     } catch (err) {
       console.error("Delete product error:", err.response?.data || err.message);
-      alert("Delete failed");
+      alert("❌ Delete failed");
     } finally {
       setLoading(false);
     }

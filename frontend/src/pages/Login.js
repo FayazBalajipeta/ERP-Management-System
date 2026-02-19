@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
-// ✅ API Base URL (Production + Local fallback)
+// ✅ API Base URL (Vercel Env → Render Backend fallback)
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  process.env.REACT_APP_API_URL ||
+  "https://erp-management-system-071t.onrender.com";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -24,28 +25,25 @@ function Login() {
       const res = await axios.post(
         `${API_BASE_URL}/api/auth/login`,
         { email, password },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
       );
 
       console.log("LOGIN RESPONSE:", res.data);
 
-      // 🔐 Validate backend response
       if (!res.data?.token) {
         alert("Login failed: token missing from server");
         return;
       }
 
-      // ✅ Store auth info
       localStorage.setItem("token", res.data.token);
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user || { role: res.data.role || "User" })
       );
 
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      console.log("USER ROLE:", storedUser?.role);
-
-      // ✅ Navigate after login
       navigate("/dashboard");
     } catch (err) {
       console.error("LOGIN ERROR:", err.response?.data || err.message);
@@ -124,10 +122,7 @@ function Login() {
 
           <div className="or">OR</div>
 
-          <button
-            className="signup-btn"
-            onClick={() => navigate("/register")}
-          >
+          <button className="signup-btn" onClick={() => navigate("/register")}>
             Signup Now
           </button>
         </div>

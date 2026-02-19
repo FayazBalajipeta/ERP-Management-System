@@ -1,6 +1,7 @@
 const router = require("express").Router();
+const mongoose = require("mongoose");
 const GRN = require("../models/GRN");
-const PurchaseOrder = require("../models/PurchaseOrder"); // 🔗 Link to PO
+const PurchaseOrder = require("../models/PurchaseOrder");
 const { protect } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
@@ -24,7 +25,7 @@ router.get("/", authorizeRoles("Admin", "Sales", "User"), async (req, res) => {
   try {
     const grns = await GRN.find()
       .sort({ createdAt: -1 })
-      .populate("purchaseOrderId"); // 🔗 populate linked PO
+      .populate("purchaseOrderId");
 
     res.json(grns);
   } catch (err) {
@@ -50,7 +51,8 @@ router.post("/", authorizeRoles("Admin", "User"), async (req, res) => {
       return res.status(400).json({ message: "All fields required" });
     }
 
-    const totalAmount = Number(quantityReceived) * Number(pricePerUnit);
+    const totalAmount =
+      Number(quantityReceived) * Number(pricePerUnit);
 
     const grn = await GRN.create({
       vendorName,
@@ -62,7 +64,7 @@ router.post("/", authorizeRoles("Admin", "User"), async (req, res) => {
     });
 
     // 🔥 Auto update Purchase Order status to RECEIVED
-    if (purchaseOrderId) {
+    if (purchaseOrderId && mongoose.Types.ObjectId.isValid(purchaseOrderId)) {
       await PurchaseOrder.findByIdAndUpdate(purchaseOrderId, {
         status: "Received",
       });
@@ -80,6 +82,12 @@ router.post("/", authorizeRoles("Admin", "User"), async (req, res) => {
 // =======================
 router.put("/:id", authorizeRoles("Admin", "User"), async (req, res) => {
   try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid GRN ID" });
+    }
+
     const {
       vendorName,
       productName,
@@ -88,10 +96,15 @@ router.put("/:id", authorizeRoles("Admin", "User"), async (req, res) => {
       purchaseOrderId,
     } = req.body;
 
-    const totalAmount = Number(quantityReceived) * Number(pricePerUnit);
+    if (!vendorName || !productName || !quantityReceived || !pricePerUnit) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const totalAmount =
+      Number(quantityReceived) * Number(pricePerUnit);
 
     const grn = await GRN.findByIdAndUpdate(
-      req.params.id,
+      id,
       {
         vendorName,
         productName,
@@ -102,6 +115,17 @@ router.put("/:id", authorizeRoles("Admin", "User"), async (req, res) => {
       },
       { new: true }
     );
+
+    if (!grn) {
+      return res.status(404).json({ message: "GRN not found" });
+    }
+
+    // 🔁 Update PO status if linked
+    if (purchaseOrderId && mongoose.Types.ObjectId.isValid(purchaseOrderId)) {
+      await PurchaseOrder.findByIdAndUpdate(purchaseOrderId, {
+        status: "Received",
+      });
+    }
 
     res.json(grn);
   } catch (err) {
@@ -115,7 +139,13 @@ router.put("/:id", authorizeRoles("Admin", "User"), async (req, res) => {
 // =======================
 router.delete("/:id", authorizeRoles("Admin"), async (req, res) => {
   try {
-    const grn = await GRN.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid GRN ID" });
+    }
+
+    const grn = await GRN.findByIdAndDelete(id);
 
     if (!grn) {
       return res.status(404).json({ message: "GRN not found" });

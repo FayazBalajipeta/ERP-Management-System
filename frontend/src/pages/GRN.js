@@ -2,11 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./GRN.css";
-
-// ✅ API Base URL (Vercel env + Render fallback)
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  "https://erp-management-system-071t.onrender.com";
+import { API_BASE_URL } from "../config"; // ✅ use central config
 
 const GRN = () => {
   const location = useLocation();
@@ -25,7 +21,9 @@ const GRN = () => {
   // ✅ Safe user parsing
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user?.role;
+
   const isAdmin = role === "Admin";
+  const isUser = role === "User";
 
   // ================================
   // Prefill when coming from PO page
@@ -111,10 +109,10 @@ const GRN = () => {
   };
 
   // ================================
-  // Edit GRN (Admin only UI-wise)
+  // Edit GRN (Admin + User)
   // ================================
   const editGRN = (g) => {
-    if (!isAdmin) return;
+    if (!isAdmin && !isUser) return;
 
     setEditId(g._id);
     setVendorName(g.vendorName || "");
@@ -152,40 +150,42 @@ const GRN = () => {
       <h2>Goods Received Note (GRN)</h2>
 
       {/* ================= FORM ================= */}
-      <div className="grn-form">
-        <input
-          placeholder="Vendor Name"
-          value={vendorName}
-          onChange={(e) => setVendorName(e.target.value)}
-        />
-        <input
-          placeholder="Product Name"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantityReceived}
-          onChange={(e) => setQuantityReceived(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Price Per Unit"
-          value={pricePerUnit}
-          onChange={(e) => setPricePerUnit(e.target.value)}
-        />
+      {(isAdmin || isUser) && (
+        <div className="grn-form">
+          <input
+            placeholder="Vendor Name"
+            value={vendorName}
+            onChange={(e) => setVendorName(e.target.value)}
+          />
+          <input
+            placeholder="Product Name"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={quantityReceived}
+            onChange={(e) => setQuantityReceived(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Price Per Unit"
+            value={pricePerUnit}
+            onChange={(e) => setPricePerUnit(e.target.value)}
+          />
 
-        {purchaseOrderId && (
-          <div className="linked-po">
-            Linked PO ID: <b>{purchaseOrderId}</b>
-          </div>
-        )}
+          {purchaseOrderId && (
+            <div className="linked-po">
+              Linked PO ID: <b>{purchaseOrderId}</b>
+            </div>
+          )}
 
-        <button className="grn-create-btn" onClick={createOrUpdateGRN}>
-          {editId ? "Update GRN" : "Create GRN"}
-        </button>
-      </div>
+          <button className="grn-create-btn" onClick={createOrUpdateGRN}>
+            {editId ? "Update GRN" : "Create GRN"}
+          </button>
+        </div>
+      )}
 
       {/* ================= TABLE ================= */}
       <table className="grn-table">
@@ -214,21 +214,22 @@ const GRN = () => {
                 <td>{g.productName}</td>
                 <td>{g.quantityReceived}</td>
                 <td>₹{g.pricePerUnit}</td>
-                <td>₹{g.totalAmount ?? g.quantityReceived * g.pricePerUnit}</td>
+                <td>₹{g.totalAmount}</td>
                 <td>{g.purchaseOrderId ? "Linked" : "Manual"}</td>
                 <td>
+                  {(isAdmin || isUser) && (
+                    <button className="edit-btn" onClick={() => editGRN(g)}>
+                      Edit
+                    </button>
+                  )}
+
                   {isAdmin && (
-                    <>
-                      <button className="edit-btn" onClick={() => editGRN(g)}>
-                        Edit
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => deleteGRN(g._id)}
-                      >
-                        Delete
-                      </button>
-                    </>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteGRN(g._id)}
+                    >
+                      Delete
+                    </button>
                   )}
                 </td>
               </tr>

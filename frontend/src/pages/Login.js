@@ -3,11 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-
-// ✅ API Base URL (Vercel Env → Render Backend fallback)
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  "https://erp-management-system-071t.onrender.com";
+import { API_BASE_URL } from "../config"; // ✅ Centralized API URL
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -27,7 +23,7 @@ function Login() {
         { email, password },
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true,
+          withCredentials: false, // ✅ Not needed since you use JWT in headers
         }
       );
 
@@ -38,6 +34,7 @@ function Login() {
         return;
       }
 
+      // ✅ Store auth info
       localStorage.setItem("token", res.data.token);
       localStorage.setItem(
         "user",
@@ -53,7 +50,7 @@ function Login() {
       } else if (err.response?.status === 404) {
         alert("❌ API not found. Check backend URL");
       } else {
-        alert("❌ Login failed. Please try again");
+        alert(err.response?.data?.message || "❌ Login failed. Please try again");
       }
     } finally {
       setLoading(false);

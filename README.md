@@ -1,70 +1,189 @@
-# Getting Started with Create React App
+🚀 SmartERP – ERP Management System (Full Stack)
+SmartERP is a full-stack ERP (Enterprise Resource Planning) web application built using the MERN stack (MongoDB, Express, React, Node.js).
+It supports role-based access control (Admin, Sales, User) and manages core business modules like Products, Customers, Sales Orders, Purchase Orders, GRN, Invoices, and Dashboard analytics.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+🌐 Live Demo (Frontend):
+👉 https://erp-management-system-three.vercel.app
 
-## Available Scripts
+🛠️ Backend API:
+👉 https://erp-management-system-071t.onrender.com
 
-In the project directory, you can run:
+✨ Features
+🔐 Authentication & Authorization
+Login & Register
 
-### `npm start`
+Forgot Password
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+JWT-based authentication
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Role-based access control:
 
-### `npm test`
+Admin – Full access
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Sales – Sales Orders, Customers, Invoices (Create only)
 
-### `npm run build`
+User (Inventory) – Products, Purchase Orders, GRN
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+📊 Dashboard (Real-time)
+Total Products
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Total Customers
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Sales Orders
 
-### `npm run eject`
+Purchase Orders
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+GRNs
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Invoices
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Revenue Graph (Monthly)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Low Stock Alerts
 
-## Learn More
+📦 Product Management
+Create / Edit products
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Stock tracking
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Low-stock alerts on dashboard
 
-### Code Splitting
+Delete only for Admin
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+👥 Customer Management
+Add / Edit customers (Admin, Sales)
 
-### Analyzing the Bundle Size
+Delete customers (Admin only)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+🧾 Sales Orders
+Create & update sales orders (Admin, Sales)
 
-### Making a Progressive Web App
+Delete (Admin only)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Status tracking
 
-### Advanced Configuration
+🛒 Purchase Orders
+Create purchase orders (Admin, User)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Status updates (Pending, Approved, Received)
 
-### Deployment
+Link Purchase Orders to GRN
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+🚚 GRN (Goods Received Note)
+Create GRN linked to Purchase Orders
 
-### `npm run build` fails to minify
+Update GRN (Admin, User)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Delete GRN (Admin only)
+
+💳 Invoice Management
+Create invoices (Admin, Sales)
+
+Edit/Delete invoices (Admin only)
+
+PDF Invoice download
+
+Auto update Sales Order status to “Invoiced”
+
+🧑‍💻 Tech Stack
+Frontend
+
+React
+
+Axios
+
+React Router
+
+Recharts (Charts)
+
+CSS
+
+Backend
+
+Node.js
+
+Express.js
+
+MongoDB + Mongoose
+
+JWT Authentication
+
+PDFKit (Invoice PDF)
+
+Deployment
+
+Frontend: Vercel
+
+Backend: Render
+
+Database: MongoDB Atlas
+
+⚙️ Environment Variables
+Backend (backend/.env)
+PORT=10000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+Frontend (Vercel → Environment Variables)
+REACT_APP_API_URL=https://erp-management-system-071t.onrender.com
+🛠️ Local Setup
+1️⃣ Clone Repository
+git clone https://github.com/FayazBalajipeta/ERP-Management-System.git
+cd ERP-Management-System
+2️⃣ Backend Setup
+cd backend
+npm install
+npm run dev
+3️⃣ Frontend Setup
+cd frontend
+npm install
+npm start
+Frontend: http://localhost:3000
+Backend: http://localhost:5000
+
+🔑 Sample Roles
+Role	Permissions
+Admin	Full access
+Sales	Sales Orders, Customers, Create Invoice
+User (Inventory)	Products, Purchase Orders, GRN
+📸 Screenshots (Optional – add later)
+Login Page
+
+Dashboard
+
+Products
+
+GRN
+
+Invoice
+
+🚀 Deployment
+Frontend deployed on Vercel
+
+Backend deployed on Render
+
+Database hosted on MongoDB Atlas
+
+📚 Learning Outcomes
+Full-stack MERN development
+
+JWT authentication & role-based access control
+
+REST API design
+
+MongoDB aggregation (Dashboard stats)
+
+Production deployment (Vercel + Render)
+
+Real-time dashboard updates
+
+CORS & environment variable management
+
+👨‍💻 Author
+
+Fayaz Balajipeta
+GitHub: https://github.com/FayazBalajipeta
+
+⭐ Support
+
+If you like this project, please give it a ⭐ on GitHub!
+This helps others discover the project and supports my work 🙌

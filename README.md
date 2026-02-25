@@ -5,6 +5,19 @@ It supports role-based access control (Admin, Sales, User) and manages core busi
 🌐 Live Demo (Frontend):
 👉 https://erp-management-system-three.vercel.app
 
+Login access(for demo):
+Admin:
+Email:admin@gmail.com
+Password:123456
+
+Sales:
+Email:sales@gmail.com
+Password:123456
+
+User:
+Email:user@gmail.com
+Password:123456
+
 🛠️ Backend API:
 👉 https://erp-management-system-071t.onrender.com
 
